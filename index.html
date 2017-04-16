@@ -1,0 +1,53 @@
+  <HTML>
+  <head>
+    <meta charset="utf-8"/>
+    <title> Races </title>
+    <style>
+    </style>
+    <script src="js/playground-base.js"></script>
+    <script src="js/raphael.js"></script>
+  <head/>
+  <body>
+    <script>
+    
+    var params = {};
+
+    var ENGINE = {};
+
+    ENGINE.game = {
+      
+      // create game board
+      create: function(){
+        
+        var svg = this._svg_;
+        var size = this._size_;
+        
+        var react = svg.react(0, 0, size.w, size.h);
+        react.attr({
+          fill: '#DDD';
+        });
+      },
+    };
+
+    // main Application of the game
+    var app = new PLAYGROUND.Application({
+
+      //there is loading recorce
+      create: function(){},
+      // call after loading
+      ready: function(){
+      
+        thsi._size_ = {
+          w: window.innerWidth,
+          h: window.innerHeight,
+        };
+        
+        this._svg_ = Raphael(0, 0, this._size_.w, this._size_.h);
+        
+        this.setState(ENGINE.game);
+      },
+    });
+
+    </script>
+  </body>
+</html>
