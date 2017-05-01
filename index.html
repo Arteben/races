@@ -1,6 +1,7 @@
   <HTML>
   <head>
     <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title> Races </title>
     <style>
     </style>
@@ -18,14 +19,108 @@
       
       // create game board
       create: function(){
+            
+        var app = this.app;
+        var paper = app._svg_;
+        var sizes = app._sizes_;
+        var road_set = paper.set();
         
-        var svg = this._svg_;
-        var size = this._size_;
+        var road_params = {
+          cell: 20,
+          radius: 40,
+          diff: 0.1,
+        };  
         
-        var react = svg.react(0, 0, size.w, size.h);
-        react.attr({
-          fill: '#DDD';
+        var road_array = (function(params){
+
+          //count for create arrays;          
+          var n, m;
+                    
+          var array = [];
+          for (n = 0; n < params.radius; n++){
+            array[n] = [];
+            for (m = 0; m < params.radius; m++){
+              array[n][m] = 0;
+            }
+          }
+          
+          var parity = (params.radius % 2 === 0);
+          
+          var half = (function(){
+            if (parity){
+              return (params.radius / 2) - 1;
+            } else {
+              return Math.floor(params.radius / 2);
+            }
+          }());
+          
+          //counts levels
+          var i = 0;
+                              
+          array.forEach(function(level){
+            
+            var begin;
+            var ln;
+            
+            var count;
+                        
+            begin = Math.abs(half - i);
+          
+            if (parity && i > half){
+              begin--;
+            }
+                                    
+            ln = (function(){
+              if (parity){
+                if (i <= half){
+                  return i * 2 + 2;
+                } else {
+                  return params.radius - (i - half - 1) * 2;
+                }
+              } else {
+                if (i < half){
+                  return i * 2 + 1;
+                } else {
+                  return params.radius - (i - half) * 2; 
+                }
+              }
+            }());
+                        
+            for (count = 0; count < ln; count++){
+              level[begin + count] = 1;
+            }
+            
+            i++;
+            
+          });
+          
+          return array;
+                    
+        }(road_params));
+        
+        var str, n, m;   
+                
+        for (n = 0; n < road_params.radius; n++){
+          str = '';
+          for (m = 0; m < road_params.radius; m++){
+            if (road_array[n][m] === 0){
+              str += '---';
+            } else {
+              str += '+O+'
+            }
+          }
+          console.log(str);
+        }        
+                
+        var rect = paper.rect(10, 10, 20, 20);
+        rect.attr({
+          fill: '#558',
         });
+        
+        
+      },
+      
+      resize: function(){
       },
     };
 
@@ -33,19 +128,32 @@
     var app = new PLAYGROUND.Application({
 
       //there is loading recorce
-      create: function(){},
-      // call after loading
-      ready: function(){
-      
-        thsi._size_ = {
+      create: function(){
+
+        this._sizes_ = {
           w: window.innerWidth,
           h: window.innerHeight,
         };
         
-        this._svg_ = Raphael(0, 0, this._size_.w, this._size_.h);
+         this._svg_ = Raphael(0, 0, this._sizes_.w, this._sizes_.h);
+      },
+      // call after loading
+      ready: function(){
         
         this.setState(ENGINE.game);
       },
+      
+      resize: function(){
+        
+        this._sizes_.w = window.innerWidth;
+        this._sizes_.h = window.innerHeight;
+        
+        
+        
+        this._svg_.canvas.style.width = this._svg_.canvas.width = this._svg_.width = this._sizes_.w;
+        this._svg_.canvas.style.height = this._svg_.canvas.height = this._svg_.height = this._sizes_.h;
+        
+      },   
     });
 
     </script>
