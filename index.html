@@ -44,56 +44,6 @@
             }
           }
           
-          var parity = (params.radius % 2 === 0);
-          
-          var half = (function(){
-            if (parity){
-              return (params.radius / 2) - 1;
-            } else {
-              return Math.floor(params.radius / 2);
-            }
-          }());
-          
-          //counts levels
-          var i = 0;
-                              
-          array.forEach(function(level){
-            
-            var begin;
-            var ln;
-            
-            var count;
-                        
-            begin = Math.abs(half - i);
-          
-            if (parity && i > half){
-              begin--;
-            }
-                                    
-            ln = (function(){
-              if (parity){
-                if (i <= half){
-                  return i * 2 + 2;
-                } else {
-                  return params.radius - (i - half - 1) * 2;
-                }
-              } else {
-                if (i < half){
-                  return i * 2 + 1;
-                } else {
-                  return params.radius - (i - half) * 2; 
-                }
-              }
-            }());
-                        
-            for (count = 0; count < ln; count++){
-              level[begin + count] = 1;
-            }
-            
-            i++;
-            
-          });
-          
           return array;
                     
         }(road_params));
@@ -117,7 +67,6 @@
           fill: '#558',
         });
         
-        
       },
       
       resize: function(){
@@ -127,7 +76,7 @@
     // main Application of the game
     var app = new PLAYGROUND.Application({
 
-      //there is loading recorce
+      //there is loading resorce
       create: function(){
 
         this._sizes_ = {
@@ -147,8 +96,6 @@
         
         this._sizes_.w = window.innerWidth;
         this._sizes_.h = window.innerHeight;
-        
-        
         
         this._svg_.canvas.style.width = this._svg_.canvas.width = this._svg_.width = this._sizes_.w;
         this._svg_.canvas.style.height = this._svg_.canvas.height = this._svg_.height = this._sizes_.h;
