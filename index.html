@@ -45,6 +45,46 @@
             }
           }
           
+          var begin_insland = Math.floor(params.radius * 0.25) - 1;
+          var end_insland = Math.floor(params.radius * 0.75) - 1;
+          
+          var i, j;
+          
+          for(i in array){
+            if (i == 0 || i == array.length - 1) {
+              for(j in array[i]){
+                array[i][j] = 1;
+              } 
+            } else if((i > 0 && i < begin_insland) || (i >= end_insland && i < array.length)){
+              for (j in array[i]){
+                if (j == 0 || j == array[i].length - 1) {
+                  array[i][j] = 1;
+                }
+              }
+            } else if (i >= begin_insland && i < end_insland){
+              for (j in array[i]){
+                if (j == 0 || j == array[i].length - 1 || (j >= begin_insland && j < end_insland)){
+                  array[i][j] = 1;
+                }
+              }
+            }
+          }
+          
+          var half = Math.floor(params.radius / 2);
+          var road = false;
+          
+          for (j in array[half]){
+            if (array[half][j] == 0 || road){
+              road = true;
+              if (array[half][j] == 1){
+                console.log('break!');
+                break;
+              } else {
+                array[half][j] = 2;
+              }
+            }
+          }
+          
           return array;
                     
         }(road_params));
@@ -56,6 +96,8 @@
           for (m = 0; m < road_params.radius; m++){
             if (road_array[n][m] === 0){
               str += '---';
+            } else if (road_array[n][m] == 2){
+              str += '>X<'
             } else {
               str += '+O+'
             }
