@@ -1,7 +1,6 @@
   <HTML>
   <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title> Races </title>
     <style>
     </style>
@@ -27,7 +26,7 @@
         
         var road_params = {
           cell: 20,
-          radius: 40,
+          radius: 50,
           diff: 0.1,
         };   
         
@@ -89,27 +88,36 @@
                     
         }(road_params));
         
-        var str, n, m;   
-                
-        for (n = 0; n < road_params.radius; n++){
-          str = '';
-          for (m = 0; m < road_params.radius; m++){
-            if (road_array[n][m] === 0){
-              str += '---';
-            } else if (road_array[n][m] == 2){
-              str += '>X<'
-            } else {
-              str += '+O+'
-            }
-          }
-          console.log(str);
-        }        
-                
-        var rect = paper.rect(10, 10, 20, 20);
-        rect.attr({
-          fill: '#558',
-        });
+        var field = {
+          board: null,
+          road: null,
+          finish: null,
+        };
+
+        field.road = paper.set();
+        field.finish = paper.set();
         
+        var n, m;   
+        var cell = road_params.cell;
+        
+        for (n = 0; n < road_array.length; n++){
+          for (m = 0; m < road_array.length; m++){
+            if (road_array[n][m] === 0){
+              field.road.push(paper.rect(n * cell, m * cell, cell, cell));
+            } else if (road_array[n][m] == 2){
+              field.finish.push(paper.rect(n * cell, m * cell, cell, cell));
+            } 
+          }
+        }
+        
+        console.log
+        
+        field.road.attr({'fill': '#FFF', 'stroke': '#111', 'stroke-width': 0.1});
+        field.finish.attr({'fill': '#499', 'stroke': '#444', 'stroke-width': 0});
+        
+        paper.setViewBox(cell * Math.floor(road_params.radius * 0.25), 0,
+                                                  sizes.w * 0.8, sizes.h * 0.8, true);
+                
       },
       
       resize: function(){
