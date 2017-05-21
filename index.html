@@ -18,7 +18,7 @@
       
       // create game board
       create: function(){
-            
+
         var app = this.app;
         var paper = app._svg_;
         var sizes = app._sizes_;
@@ -26,13 +26,11 @@
         var road_params = {
           cell: 20,
           radius: 50,
-          diff: 0.1,
         };   
 
         this._road_p_ = road_params;
         
-        var speed = 100;
-        this._speed_ = speed;
+        var speed = 10;
         
         document.body.style.backgroundColor = "#BBB";
         
@@ -125,23 +123,22 @@
         
         this._field_ = field;
         
-        var game = {
-          coord: {
-            i: 27,
-            j: 5,
+        // for step, calcults numbers for renders
+        // only move racer
+        var steps = {
+          cycle: false,
+          count: 0, 
+          frames: 1000 / speed,
+          goal: {
+            i: 0,
+            j: 0,
           },
-          
-          speed: 0,
-          // clock, begin - 0
-          root: 2,
-          block_speed: false,
-          block_root: false,
         };
         
-        this._game_ = game;
-        
+        this._steps_ = steps;
+        // params for renders objects that moves
         var renders = {        
-          count: 0,
+          status: false,
           racer: {
             coord: {
               x: 0,
@@ -162,38 +159,63 @@
         
         this._renders_ = renders;
         
-        var racer = {
-          coord: {
-            i: game.coord.i,
-            j: game.coord.j,
-          },
-          
+        // params for racer
+        var racer = {          
           point: paper.circle(0, 0, 0.3 * road_params.cell).attr({'fill': '#944'}),
+          //path: paper.path("");
         };
         
         this._racer_ = racer;
 
-        racer.point.attr({
-          cx: (racer.coord.i - 1) * road_params.cell + road_params.cell / 2,
-          cy: (racer.coord.j - 1) * road_params.cell + road_params.cell / 2,
-        });
+        var game = {
+          // current coords racer
+          coord: {
+            i: 0,
+            j: 0,
+          },
+          
+          speed: 0,
+          // clock, begin - 0
+          root: 2,
+          // set racer in road without animate
+          set_racer: function(coord){
+
+            this.coord.i = coord.i;
+            this.coord.j = coord.j;
+
+            racer.point.attr({
+              cx: (coord.i - 1) * road_params.cell + road_params.cell / 2,
+              cy: (coord.j - 1) * road_params.cell + road_params.cell / 2,
+            });
+            
+            paper.setViewBox(0, 0, sizes.w, sizes.h);
+          },
+          // goes move for racer
+          racer_go: function(){
+            
+          },
+        };
         
-        paper.setViewBox(0, 0, sizes.w, sizes.h);                
+        this._game_ = game;
+
+        game.set_racer({i: 27, j: 5});
       },
-      
+
       step: function(){
-        if (this._renders_.count > 0){
+        // calcuts params render for current frame
+        if (this._steps_.cycle){
           // calcuts the go
           
           // end calcuts the go
-          if (this._renders_.count == 100){
-            this._renders_.count = 0;
-            this._game_.block_speed = false;
-            this._game_.block_root = false;
+          if (this._steps_.count == this._steps_.frames){
+            this._steps_.count = 0;
+            this._steps_.cycle = false;
+            
           }
+        // start calcuts params for render if it is needs
         } else if (this._game_.speed > 0){
           console.log(this._game_.speed, this._game_.root);
-          
+          this._game_.racer_go();
         }
       },
       
@@ -204,7 +226,7 @@
     };
 
     // main Application of the game
-    var app = new PLAYGROUND.Application({
+     var app = new PLAYGROUND.Application({
 
       //there is loading resorce
       create: function(){
