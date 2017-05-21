@@ -22,13 +22,19 @@
         var app = this.app;
         var paper = app._svg_;
         var sizes = app._sizes_;
-        var road_set = paper.set();
         
         var road_params = {
           cell: 20,
           radius: 50,
           diff: 0.1,
         };   
+
+        this._road_p_ = road_params;
+        
+        var speed = 100;
+        this._speed_ = speed;
+        
+        document.body.style.backgroundColor = "#BBB";
         
         // create array for road
         var road_array = (function(params){
@@ -88,37 +94,110 @@
                     
         }(road_params));
         
-        var field = {
-          board: null,
-          road: null,
-          finish: null,
-        };
-
-        field.road = paper.set();
-        field.finish = paper.set();
+        this._road_array_ = road_array; 
         
-        var n, m;   
-        var cell = road_params.cell;
+        var field = (function(array, p, svg){
+          
+          var road = svg.set();
+          var finish = svg.set();
+          var n, m;   
+          var cell = p.cell;
         
-        for (n = 0; n < road_array.length; n++){
-          for (m = 0; m < road_array.length; m++){
-            if (road_array[n][m] === 0){
-              field.road.push(paper.rect(n * cell, m * cell, cell, cell));
-            } else if (road_array[n][m] == 2){
-              field.finish.push(paper.rect(n * cell, m * cell, cell, cell));
-            } 
+          for (n = 0; n < array.length; n++){
+            for (m = 0; m < array.length; m++){
+              if (road_array[n][m] === 0){
+                road.push(svg.rect(n * cell, m * cell, cell, cell));
+              } else if (array[n][m] == 2){
+                finish.push(paper.rect(n * cell, m * cell, cell, cell));
+              } 
+            }
           }
-        }
+                  
+          road.attr({'fill': '#FFF', 'stroke': '#111', 'stroke-width': 0.1});
+          finish.attr({'fill': '#499', 'stroke': '#444', 'stroke-width': 0});
+                  
+          return {
+            board: null,
+            road: road,
+            finish: finish,
+          };
+        }(road_array, road_params, paper));
         
-        console.log
+        this._field_ = field;
         
-        field.road.attr({'fill': '#FFF', 'stroke': '#111', 'stroke-width': 0.1});
-        field.finish.attr({'fill': '#499', 'stroke': '#444', 'stroke-width': 0});
+        var game = {
+          coord: {
+            i: 27,
+            j: 5,
+          },
+          
+          speed: 0,
+          // clock, begin - 0
+          root: 2,
+          block_speed: false,
+          block_root: false,
+        };
         
-        paper.setViewBox(cell * Math.floor(road_params.radius * 0.25), 0,
-                                                  sizes.w * 0.8, sizes.h * 0.8, true);
-                
+        this._game_ = game;
+        
+        var renders = {        
+          count: 0,
+          racer: {
+            coord: {
+              x: 0,
+              y: 0
+            },
+          },
+          //line: {
+            //begin_point: {
+              //x: 0,
+              //y: 0,
+            //},
+            //end_point: {
+              //x: 0,
+              //y: 0,
+            //},  
+          //},
+        };
+        
+        this._renders_ = renders;
+        
+        var racer = {
+          coord: {
+            i: game.coord.i,
+            j: game.coord.j,
+          },
+          
+          point: paper.circle(0, 0, 0.3 * road_params.cell).attr({'fill': '#944'}),
+        };
+        
+        this._racer_ = racer;
+
+        racer.point.attr({
+          cx: (racer.coord.i - 1) * road_params.cell + road_params.cell / 2,
+          cy: (racer.coord.j - 1) * road_params.cell + road_params.cell / 2,
+        });
+        
+        paper.setViewBox(0, 0, sizes.w, sizes.h);                
       },
+      
+      step: function(){
+        if (this._renders_.count > 0){
+          // calcuts the go
+          
+          // end calcuts the go
+          if (this._renders_.count == 100){
+            this._renders_.count = 0;
+            this._game_.block_speed = false;
+            this._game_.block_root = false;
+          }
+        } else if (this._game_.speed > 0){
+          console.log(this._game_.speed, this._game_.root);
+          
+        }
+      },
+      
+      render: function(){},
       
       resize: function(){
       },
