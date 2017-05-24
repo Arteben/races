@@ -30,7 +30,7 @@
 
         this._road_p_ = road_params;
         
-        var speed = 5;
+        var speed = 100;
         
         document.body.style.backgroundColor = "#BBB";
         
@@ -141,6 +141,13 @@
             x: 0,
             y: 0,
           },
+          viewBox: {
+            set: false,
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+          },
           //line: {
             //begin_point: {
               //x: 0,
@@ -166,8 +173,9 @@
           //path: paper.path("");
         };
         
-        // control game
+        // controls the game
         var game = {
+          sizes: sizes,
           svg: paper,
           array: road_array,
           field: field,
@@ -185,6 +193,7 @@
           set_racer: function(coord){
 
             var xy = this.calcuts_x_y(coord.i, coord.j);
+            var params_view = this.get_viewBox(xy.x, xy.y);
             
             this.racer.coord.i = coord.i;
             this.racer.coord.j = coord.j;
@@ -196,8 +205,43 @@
               cy: xy.y,
             });
             
-            paper.setViewBox(0, 0, sizes.w, sizes.h);
+            paper.setViewBox(params_view.x, params_view.y, sizes.w, sizes.h, true);
           },
+          // gets params for viewBox
+          get_viewBox: function(x_racer, y_racer){
+            var w, h, x, y;
+            var scale = 0.8;
+            
+            //if (this.speed > 0){
+              //scale = 2 / this.speed;
+            //} else {
+              //scale = 2;
+            //}
+            
+            w = this.sizes.w * scale;
+            h = this.sizes.h * scale;
+            
+            if (x_racer > w / 2){
+              x = x_racer - w / 2;
+            } else {
+              x = 0;
+            }
+            
+            if (y_racer > h / 2){
+              y = y_racer - h / 2;
+            } else {
+              y = 0;
+            }
+            
+            console.log(x, y, w, h, scale);
+            
+            return {
+              x: x,
+              y: y,
+              w: w,
+              h: h,
+            };
+          },  
           // calcuts_x_y from i, j
           calcuts_x_y: function(i, j){
             return {
@@ -362,9 +406,10 @@
             }
           },
             
-          steps_for_game: function(){
+          steps_for_racer: function(){
             
             var xy;
+            var viewBox;
                         
             // calcuts params render for current frame                    
             if (this.steps_r.cycle){
@@ -375,17 +420,36 @@
                                           'L' + this.steps_r.goal.x + ',' + this.steps_r.goal.y;
                   this.steps_r.bit = Raphael.getTotalLength(this.steps_r.path) / this.steps_r.frames;
                   this.renders_r.status = true;
-                  this.renders_r.racer.x = this.racer.coord.x;
-                  this.renders_r.racer.y = this.racer.coord.y;  
+                  xy = {
+                    x: this.racer.coord.x,
+                    y: this.racer.coord.y
+                  },
                   
-                  
+                  viewBox = this.get_viewBox(xy.x, xy.y);
+                  this.renders_r.viewBox.set = true;
+                  this.renders_r.viewBox.x = viewBox.x;
+                  this.renders_r.viewBox.y = viewBox.y;
+                  this.renders_r.viewBox.w = viewBox.w;
+                  this.renders_r.viewBox.h = viewBox.h;
                 } else {
                   xy = Raphael.getPointAtLength(this.steps_r.path, 
                                         this.steps_r.count * this.steps_r.bit);
-                  this.renders_r.racer.x = xy.x;
-                  this.renders_r.racer.y = xy.y;            
+                  if (this.steps_r.count % 1 == 0){
+                  viewBox = this.get_viewBox(xy.x, xy.y);
+                    this.renders_r.viewBox.set = true;
+                    this.renders_r.viewBox.x = viewBox.x;
+                    this.renders_r.viewBox.y = viewBox.y;
+                    this.renders_r.viewBox.w = viewBox.w;
+                    this.renders_r.viewBox.h = viewBox.h;
+                  } else {
+                    this.renders_r.viewBox.set = false;
+                  }
+                  
                 }
-                
+                                
+                this.renders_r.racer.x = xy.x;
+                this.renders_r.racer.y = xy.y;  
+
                 this.steps_r.count++;
               } else {
               // end move for racer
@@ -404,12 +468,17 @@
             } 
           },
           
-          renders_for_game: function(){
+          renders_for_racer: function(){
             if (this.renders_r.status){
               this.racer.point.attr({
                 cx: this.renders_r.racer.x,
                 cy: this.renders_r.racer.y,
               });
+              
+              if (this.renders_r.viewBox.set){
+                this.svg.setViewBox(this.renders_r.viewBox.x, this.renders_r.viewBox.y,
+                                     this.renders_r.viewBox.w, this.renders_r.viewBox.h);
+              }
             }
           },
           
@@ -448,22 +517,17 @@
         game.set_racer({i: 27, j: 5});
       
         this.step = function(){
-          game.steps_for_game();
+          game.steps_for_racer();
         };
         
         this.render = function(){
-          game.renders_for_game();
+          game.renders_for_racer();
         };
         
         this.keydown = function(data){
           game.key_down(data)
         };
 
-        //this.step = game.steps_for_game;
-        
-        //this.render = game.renders_for_game;
-        
-        //this.onkeydown = game.key_down;
       },
     };
 
