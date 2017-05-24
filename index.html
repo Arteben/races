@@ -26,13 +26,14 @@
         var road_params = {
           cell: 20,
           radius: 50,
+          rocks: '#999',
         };   
 
         this._road_p_ = road_params;
         
-        var speed = 100;
+        var speed = 50;
         
-        document.body.style.backgroundColor = "#BBB";
+        document.body.style.backgroundColor = road_params.rocks;
         
         // create array for road
         var road_array = (function(params){
@@ -73,16 +74,18 @@
             }
           }
           
-          var half = Math.floor(params.radius / 2);
-          var road = false;
+          var half = Math.floor(params.radius / 2 - 2);
+
+          exit:
           
-          for (j in array[half]){
-            if (array[half][j] == 0 || road){
-              road = true;
-              if (array[half][j] == 1){
-                break;
-              } else {
-                array[half][j] = 2;
+          for (m in array[half]){
+            if (array[half][m] == 0){
+              for (n = m; n < array[half].length; n++){      
+                if (array[half][n] == 1){
+                  break exit;
+                } else {
+                  array[half][n] = 2;
+                }
               }
             }
           }
@@ -93,28 +96,259 @@
                 
         var field = (function(array, p, svg){
           
-          var road = svg.set();
-          var finish = svg.set();
-          var n, m;   
+          var path;
+          var road;
+          var island;
+          var attr_road = {'stroke': '#556', 'stroke-width': 3, 'fill': '#DDD'};
+          var attr_island = {'stroke': '#556', 'stroke-width': 3, 'fill': p.rocks};
+          var i, j, m, n;
+          var cycle_points;
+          var stright;
           var cell = p.cell;
-        
-          for (n = 0; n < array.length; n++){
-            for (m = 0; m < array.length; m++){
-              if (road_array[n][m] === 0){
-                road.push(svg.rect(n * cell, m * cell, cell, cell));
-              } else if (array[n][m] == 2){
-                finish.push(paper.rect(n * cell, m * cell, cell, cell));
-              } 
+          var half = Math.floor(p.radius / 2 - 2);
+          // begin root, on clock
+          var root;
+          var count;
+          var cycle;
+          
+          exit:
+          for (i = 0; i < array.length; i++){
+            for (j = 0; j< array[i].length; j++){
+              if (array[i][j] == 2){
+                point_up = {i: i, j: j};
+                break exit; 
+              }
             }
           }
-                  
-          road.attr({'fill': '#FFF', 'stroke': '#111', 'stroke-width': 0.1});
-          finish.attr({'fill': '#499', 'stroke': '#444', 'stroke-width': 0});
+          
+          for (j = point_up.j; j <= array[point_up.i].length; j++){
+            if (array[point_up.i][j] == 1){
+              point_down = {i: point_up.i, j: j - 1};
+              break;
+            }
+          }
+          
+          root = 2;
+          path = '';
+          
+          cycle_points = {
+            i: point_up.i,
+            j: point_up.j,
+          };
+          
+          count = 0;
+          cycle = 'up';
+
+          // draw_border          
+          draw_and_check_root = function(){
+            
+            if (count != 0 && array[cycle_points.i][cycle_points.j] == 2){
+              path+= 'Z';
+
+              if (cycle == 'up'){
+                cycle_points = {
+                  i: point_down.i,
+                  j: point_down.j,
+                };
+
+                root = 1;
+                count = 0;
+                cycle = 'down';
+                road = path;
+                path = '';
+              } else {
+                island = path;
+                return;
+              }
+            }
+            
+            if (count == 0){
+              path += 'M';
+            } else {
+              if (!stright){
+                path += 'L';
+              }
+            }
+            
+            m = cycle_points.i;
+            n = cycle_points.j;
+            
+            stright = false;
+            
+            switch(root){
+              case 0:
+                
+                if (array[m - 1] && (array[m - 1][n - 1] === 0 || array[m - 1][n - 1] == 2)){
+                  root = 6;
+                  cycle_points.i--;
+                  cycle_points.j--;
+                } else if (array[m][n - 1] === 0 || array[m][n - 1] == 2) {
+                  cycle_points.j--;
+                  stright = true;
+                } else {
+                  root = 2;
+                }
+
+                if (!stright){
+                  path += (m * cell) + ',' + ((n + 1) * cell) + 'L' + (m * cell) + ',' + (n * cell);
+                  count = 0;
+                } 
+                
+              break;
+              case 1:
+                                
+                if (array[m + 1] && (array[m + 1][n + 1] === 0 || array[m + 1][n + 1] == 2)){
+                  root = 3;
+                  cycle_points.i++;
+                  cycle_points.j++;
+                } else if (array[m + 1] && (array[m + 1][n] === 0 || array[m + 1][n] == 2)){
+                  cycle_points.i++;
+                  stright = true;                
+                } else {
+                  root = 7;
+                }
+
+                if (!stright){
+                  path += (m * cell) + ',' + (n * cell) + 'L' + (m * cell) + ',' + ((n + 1) * cell);
+                  count = 0;
+                } 
+
+              break;
+              case 2:
+              
+                                
+                if (array[m + 1] && (array[m + 1][n - 1] === 0 || array[m + 1][n - 1] == 2)){
+                  root = 0;
+                  cycle_points.i++;
+                  cycle_points.j--;
+                } else if (array[m + 1] && (array[m + 1][n] === 0 || array[m + 1][n] == 2)){
+                  cycle_points.i++;
+                  stright = true;
+                } else {
+                  root = 4;
+                }
+
+                if (!stright){
+                  path += (m * cell) + ',' + (n * cell) + 'L' + ((m + 1) * cell) + ',' + (n * cell);
+                  count = 0;
+                } 
+
+              break;
+              case 3: 
+                                
+                if (array[m - 1] && (array[m - 1][n + 1] === 0 || array[m - 1][n + 1] == 2)){
+                  root = 5;
+                  cycle_points.i--;
+                  cycle_points.j++;
+                } else if (array[m][n + 1] === 0 || array[m][n + 1] == 2){
+                  cycle_points.j++;
+                  stright = true;                
+                } else {
+                  root = 1;
+                }
+
+                if (!stright){
+                  path += (m * cell) + ',' + (n * cell) + 'L' + (m * cell) + ',' + ((n + 1) * cell);
+                  count = 0;
+                } 
+
+              break;
+              case 4:
+                                
+                if (array[m + 1] && (array[m + 1][n + 1] === 0 || array[m + 1][n + 1] == 2)){
+                  root = 2;
+                  cycle_points.i--;
+                  cycle_points.j++;
+                } else if (array[m][n + 1] === 0 || array[m][n + 1] == 2){
+                  cycle_points.j++;
+                  stright = true;                
+                } else {
+                  root = 6;
+                }
+
+                if (!stright){
+                  path += ((m + 1) * cell) + ',' + (n * cell) + 'L' + ((m + 1) * cell) + ',' + ((n + 1) * cell);
+                  count = 0;
+                } 
+
+              break;
+
+              case 5:
+                                
+                if (array[m - 1] && (array[m - 1][n - 1] === 0 || array[m - 1][n - 1] == 2)){
+                  root = 7;
+                  cycle_points.i--;
+                  cycle_points.j--;
+                } else if (array[m - 1] && (array[m - 1][n] === 0 || array[m - 1][n] == 2)){
+                  cycle_points.i--;
+                  stright = true;                
+                } else {
+                  root = 3;
+                }
+
+                if (!stright){
+                  path += ((m + 1) * cell) + ',' + (n  * cell) + 'L' + (m * cell) + ',' + (n * cell);
+                  count = 0;
+                } 
+
+
+              break;            
+              case 6:
+                                
+                if (array[m - 1] && (array[m - 1][n + 1] === 0 || array[m - 1][n + 1] == 2)){
+                  root = 4;
+                  cycle_points.i--;
+                  cycle_points.j++;
+                } else if (array[m - 1] && (array[m - 1][n] === 0 || array[m - 1][n] == 2)){
+                  cycle_points.i--;
+                  stright = true;                
+                } else {
+                  root = 0;
+                }
+
+                if (!stright){
+                  path += ((m + 1) * cell) + ',' + ((n + 1) * cell) + 'L' + (m  * cell) + ',' + ((n + 1) * cell);
+                  count = 0;
+                } 
+
+              break;
+              case 7:
+                
+                if (array[m + 1] && (array[m + 1][n - 1] === 0 || array[m + 1][n - 1] == 2)){
+                  root = 1;
+                  cycle_points.i++;
+                  cycle_points.j--;
+                } else if (array[m][n - 1] === 0) {
+                  cycle_points.j--;
+                  stright = true;
+                } else {
+                  root = 5;
+                }
+
+                if (!stright){
+                  path += ((m + 1) * cell) + ',' + ((n + 1) * cell) + 'L' + ((m + 1) * cell) + ',' + (n * cell);
+                  count = 0;
+                } 
+              break;        
+            }
+            
+            if (count > p.radius){
+              return;
+            } else {
+              count++;
+              draw_and_check_root();
+            }
+          };
+          
+          draw_and_check_root();
+          
+          console.log(path);
                   
           return {
-            board: null,
-            road: road,
-            finish: finish,
+            //board: null,
+            road: svg.path(road).attr(attr_road),
+            island: svg.path(island).attr(attr_island),
+            //finish: finish,
           };
         }(road_array, road_params, paper));
                 
