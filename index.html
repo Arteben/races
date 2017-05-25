@@ -26,14 +26,16 @@
         var road_params = {
           cell: 20,
           radius: 50,
-          rocks: '#999',
+          attr_road: {'stroke': '#556', 'stroke-width': 5, 'fill': '#DDD'},
+          attr_island: {'stroke': '#556', 'stroke-width': 5, 'fill': "#999"},
+          attr_finish: {'stroke': '#BB3', 'stroke-width': 10},
         };   
 
         this._road_p_ = road_params;
         
         var speed = 50;
         
-        document.body.style.backgroundColor = road_params.rocks;
+        document.body.style.backgroundColor = road_params.attr_island.fill;
         
         // create array for road
         var road_array = (function(params){
@@ -99,8 +101,6 @@
           var path;
           var road;
           var island;
-          var attr_road = {'stroke': '#556', 'stroke-width': 3, 'fill': '#DDD'};
-          var attr_island = {'stroke': '#556', 'stroke-width': 3, 'fill': p.rocks};
           var i, j, m, n;
           var cycle_points;
           var stright;
@@ -110,6 +110,8 @@
           var root;
           var count;
           var cycle;
+          var point_up, point_down;
+          var finish;
           
           exit:
           for (i = 0; i < array.length; i++){
@@ -127,6 +129,9 @@
               break;
             }
           }
+          
+          finish = 'M' + ((point_up.i + 0.5) * cell) + ',' + (point_up.j * cell) +
+                    'L' +  ((point_down.i + 0.5) * cell) + ',' + ((point_down.j + 1) * cell);  
           
           root = 2;
           path = '';
@@ -346,9 +351,13 @@
                   
           return {
             //board: null,
-            road: svg.path(road).attr(attr_road),
-            island: svg.path(island).attr(attr_island),
-            //finish: finish,
+            road: svg.path(road).attr(p.attr_road),
+            island: svg.path(island).attr(p.attr_island),
+            finish: {
+              el: svg.path(finish).attr(p.attr_finish),
+              point_up: point_up,
+              point_down: point_down,
+            },            
           };
         }(road_array, road_params, paper));
                 
@@ -442,18 +451,14 @@
             paper.setViewBox(params_view.x, params_view.y, sizes.w, sizes.h, true);
           },
           // gets params for viewBox
-          get_viewBox: function(x_racer, y_racer){
+          get_viewBox: function(x_racer,  y_racer){
             var w, h, x, y;
             var scale = 0.8;
             
-            //if (this.speed > 0){
-              //scale = 2 / this.speed;
-            //} else {
-              //scale = 2;
-            //}
-            
             w = this.sizes.w * scale;
             h = this.sizes.h * scale;
+            
+            if (x_racer )
             
             if (x_racer > w / 2){
               x = x_racer - w / 2;
@@ -656,30 +661,19 @@
                   this.renders_r.status = true;
                   xy = {
                     x: this.racer.coord.x,
-                    y: this.racer.coord.y
-                  },
-                  
-                  viewBox = this.get_viewBox(xy.x, xy.y);
-                  this.renders_r.viewBox.set = true;
-                  this.renders_r.viewBox.x = viewBox.x;
-                  this.renders_r.viewBox.y = viewBox.y;
-                  this.renders_r.viewBox.w = viewBox.w;
-                  this.renders_r.viewBox.h = viewBox.h;
+                    y: this.racer.coord.y,
+                  };                  
                 } else {
                   xy = Raphael.getPointAtLength(this.steps_r.path, 
                                         this.steps_r.count * this.steps_r.bit);
-                  if (this.steps_r.count % 1 == 0){
-                  viewBox = this.get_viewBox(xy.x, xy.y);
-                    this.renders_r.viewBox.set = true;
-                    this.renders_r.viewBox.x = viewBox.x;
-                    this.renders_r.viewBox.y = viewBox.y;
-                    this.renders_r.viewBox.w = viewBox.w;
-                    this.renders_r.viewBox.h = viewBox.h;
-                  } else {
-                    this.renders_r.viewBox.set = false;
-                  }
-                  
                 }
+                
+                viewBox = this.get_viewBox(xy.x, xy.y);
+                
+                this.renders_r.viewBox.x = viewBox.x;
+                this.renders_r.viewBox.y = viewBox.y;
+                this.renders_r.viewBox.w = viewBox.w;
+                this.renders_r.viewBox.h = viewBox.h;
                                 
                 this.renders_r.racer.x = xy.x;
                 this.renders_r.racer.y = xy.y;  
@@ -709,10 +703,8 @@
                 cy: this.renders_r.racer.y,
               });
               
-              if (this.renders_r.viewBox.set){
-                this.svg.setViewBox(this.renders_r.viewBox.x, this.renders_r.viewBox.y,
-                                     this.renders_r.viewBox.w, this.renders_r.viewBox.h);
-              }
+              this.svg.setViewBox(this.renders_r.viewBox.x, this.renders_r.viewBox.y,
+                                   this.renders_r.viewBox.w, this.renders_r.viewBox.h);
             }
           },
           
@@ -747,8 +739,11 @@
             }
           },
         };
-        
-        game.set_racer({i: 27, j: 5});
+                
+        game.set_racer({
+          i: field.finish.point_up.i + 2,
+          j: Math.round((field.finish.point_down.j - field.finish.point_up.j) / 2)  , 
+        });
       
         this.step = function(){
           game.steps_for_racer();
