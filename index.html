@@ -220,7 +220,7 @@
                 }
 
                 if (!stright){
-                  path += (m * cell) + ',' + (n * cell) + 'L' + (m * cell) + ',' + ((n + 1) * cell);
+                  path += (m * cell) + ',' + ((n + 1) * cell) + 'L' + ((m + 1) * cell) + ',' + ((n + 1) * cell);
                   count = 0;
                 } 
 
@@ -414,7 +414,7 @@
             el: paper.path("").attr({'stroke': '#333', 'stroke-width': 4}),
             str: '',
           },
-          path_anim: paper.path("").attr({'stroke': '#000', 'stroke-width': 6}),
+          path_anim: paper.path("").attr({'stroke': '#000', 'stroke-width': 5}),
           point: paper.circle(0, 0, 0.3 * road_params.cell).attr({'fill': '#944'}),
         };
         
@@ -462,7 +462,7 @@
           get_viewBox: (function(){
           
             var w, h, x, y;
-            var scale = 1
+            var scale = 1;
             
             w = sizes.w * scale;
             h = sizes.h * scale;
@@ -525,7 +525,7 @@
               case 0:
                 for (s = 1; s <= this.speed; s++ ){
                   if (this.array[i][j - s] !== 0){
-                    //s--;
+                    s-= 2;
                     boomb(i, j - s);
                     break;
                   } 
@@ -538,7 +538,8 @@
               case 1:
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i + s] || this.array[i + s][j - s] !== 0){
-                    //s--;
+                    
+                    s-= 2;
                     boomb(i + s, j - s);
                     break;
                   } 
@@ -551,7 +552,8 @@
               case 2: 
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i + s] || this.array[i + s][j] !== 0){
-                    //s--;
+                    //s-= 2;
+                                        
                     boomb(i + s, j);
                     break;
                   } 
@@ -564,7 +566,7 @@
               case 3: 
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i + s] || this.array[i + s][j + s] !== 0){
-                    //s--;
+                    //s-= 2;
                     boomb(i + s, j + s);
                     break;
                   } 
@@ -577,7 +579,7 @@
               case 4: 
                 for (s = 1; s <= this.speed; s++ ){
                   if (this.array[i][j + s] !== 0){
-                    //s--;
+                    //s-= 2;
                     boomb(i, j + s);
                     break;
                   } 
@@ -590,7 +592,7 @@
               case 5: 
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i - s] || this.array[i - s][j + s] !== 0){
-                    //s--;
+                    //s-= 2;
                     boomb(i - s, j + s);
                     break;
                   } 
@@ -603,7 +605,7 @@
               case 6:
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i - s] || this.array[i - s][j] !== 0){
-                    //s--;
+                    //s-= 2;
                     boomb(i - s, j);
                     break;
                   } 
@@ -616,7 +618,7 @@
               case 7: 
                 for (s = 1; s <= this.speed; s++ ){
                   if (!this.array[i - s] || this.array[i - s][j - s] !== 0){
-                    //s--;
+                    s -= 2;
                     boomb(i - s, j - s);
                     break;
                   } 
@@ -645,7 +647,6 @@
             }
             // breack racer in i, j
             function boomb(racer_i, racer_j){
-              console.log('racer break!', racer_i, racer_j);
             
               the.steps_r.count = 0;
               the.steps_r.cycle = false;
