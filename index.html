@@ -118,6 +118,7 @@
           var cycle;
           var point_up, point_down;
           var finish;
+          var return_field;
           
           exit:
           for (i = 0; i < array.length; i++){
@@ -353,18 +354,19 @@
           
           draw_and_check_root();
           
-          console.log(path);
-                  
-          return {
-            //board: null,
+          //console.log(path);
+          
+          return_field = {            
             road: svg.path(road).attr(p.attr_road),
             island: svg.path(island).attr(p.attr_island),
             finish: {
               el: svg.path(finish).attr(p.attr_finish),
               point_up: point_up,
               point_down: point_down,
-            },            
+            },
           };
+                  
+          return return_field;
         }(road_array, road_params, paper));
                 
         // for step, calcults numbers for renders
@@ -435,6 +437,64 @@
             s: 0,
             r: 2,
           },
+          finish: {
+            on: 0,
+            end: false,
+            
+          },
+          get_ij_from_xy: function(x, y){
+            
+            var ij = {
+              i: Math.floor(x / this.params.cell),
+              j: Math.floor(y / this.params.cell),
+            };
+            
+            //this.svg.rect(ij.i * this.params.cell,ij.j * this.params.cell, this.params.cell, this.params.cell).attr({'fill': '#8DD'});
+            
+            return ij;
+          },
+          
+          check_finish: (function(){
+            
+            var timeout;
+            
+            var ink_timeout = function(the, type){
+                            
+              if (type){
+                the.finish.on++;
+              } else {
+                the.finish.on--;
+              }               
+                            
+              window.clearTimeout(timeout);
+              timeout = undefined;
+              
+            };
+            
+            return function(){
+                            
+              if (this.root > 0 && this.root < 4){
+                if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
+                  if (this.finish.on > 0){
+                    if (timeout === undefined){
+                      timeout = window.setTimeout(ink_timeout, 1000, this, false);
+                    }
+                  } else {
+                    console.log('finish!!!!');
+                    this.finish.end = true;
+                    this.speed = 0;
+                  }
+                }    
+              } else {
+                if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
+                  if (timeout === undefined){
+                    timeout = window.setTimeout(ink_timeout, 1000, this, true);
+                  }
+                }
+              }
+            };
+            
+          }()),  
           // set racer in road without animate
           set_racer: function(coord){
 
@@ -454,7 +514,7 @@
             this.racer.path.str += 'L' + xy.x + ',' + xy.y;
             this.racer.path.el.attr({'path': this.racer.path.str});
             
-            console.log(this.racer.path.str);
+            //console.log(this.racer.path.str);
             
             paper.setViewBox(params_view.x, params_view.y, params_view.w, params_view.h);
           },
@@ -467,7 +527,7 @@
             w = sizes.w * scale;
             h = sizes.h * scale;
 
-            console.log('sizes', h);
+            //console.log('sizes', h);
 
             return function(x_racer,  y_racer){        
                                               
@@ -484,7 +544,6 @@
               }
               
               if (this.params.size > h){
-                console.log('errors_h!');
                 if (y_racer > (this.params.size - h / 2)){
                   y = this.params.size - h;
                 } else if (y_racer < h / 2){
@@ -496,7 +555,7 @@
                 y = y_racer - h / 2;
               }
               
-              console.log('viewBox', x, y);
+              //console.log('viewBox', x, y);
               
               return {
                 x: x,
@@ -509,8 +568,8 @@
           // calcuts_x_y from i, j
           calcuts_x_y: function(i, j){
             return {
-                x: i * road_params.cell - road_params.cell / 2,
-                y: j * road_params.cell - road_params.cell / 2,
+                x: i * road_params.cell + road_params.cell / 2,
+                y: j * road_params.cell + road_params.cell / 2,
               };
           },
           // goes move for racer
@@ -524,22 +583,25 @@
             switch (this.root){
               case 0:
                 for (s = 1; s <= this.speed; s++ ){
-                  if (this.array[i][j - s] !== 0){
-                    s-= 2;
-                    boomb(i, j - s);
+                                                      
+                  if (this.array[i][j - s] && this.array[i][j - s] === 1){
+                                        
+                    s--;
+                    boomb(i, j - s);                    
                     break;
                   } 
-                  
+                                                      
                   if (s == this.speed){
-                    set_goal(i, j - s);
+                    set_goal(i, j - s);                    
                   }
+
                 }
               break;
               case 1:
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i + s] || this.array[i + s][j - s] !== 0){
+                  if (this.array[i + s] && this.array[i + s][j - s] && this.array[i + s][j - s] === 1){
                     
-                    s-= 2;
+                    s--;
                     boomb(i + s, j - s);
                     break;
                   } 
@@ -551,9 +613,8 @@
               break;
               case 2: 
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i + s] || this.array[i + s][j] !== 0){
-                    //s-= 2;
-                                        
+                  if (this.array[i + s] && this.array[i + s][j] && this.array[i + s][j] === 1){
+                    s--;                                        
                     boomb(i + s, j);
                     break;
                   } 
@@ -565,8 +626,8 @@
               break;
               case 3: 
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i + s] || this.array[i + s][j + s] !== 0){
-                    //s-= 2;
+                  if (this.array[i + s] && this.array[i + s][j + s] && this.array[i + s][j + s] === 1){
+                    s--;
                     boomb(i + s, j + s);
                     break;
                   } 
@@ -578,8 +639,8 @@
               break;
               case 4: 
                 for (s = 1; s <= this.speed; s++ ){
-                  if (this.array[i][j + s] !== 0){
-                    //s-= 2;
+                  if (this.array[i][j + s] && this.array[i][j + s] === 1){
+                    s--;
                     boomb(i, j + s);
                     break;
                   } 
@@ -591,8 +652,8 @@
               break;
               case 5: 
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i - s] || this.array[i - s][j + s] !== 0){
-                    //s-= 2;
+                  if (this.array[i - s] && this.array[i - s][j + s] && this.array[i - s][j + s] === 1){
+                    s--;
                     boomb(i - s, j + s);
                     break;
                   } 
@@ -604,8 +665,8 @@
               break;
               case 6:
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i - s] || this.array[i - s][j] !== 0){
-                    //s-= 2;
+                  if (this.array[i - s] && this.array[i - s][j] && this.array[i - s][j] === 1){
+                    s--;
                     boomb(i - s, j);
                     break;
                   } 
@@ -617,8 +678,8 @@
               break;
               case 7: 
                 for (s = 1; s <= this.speed; s++ ){
-                  if (!this.array[i - s] || this.array[i - s][j - s] !== 0){
-                    s -= 2;
+                  if (this.array[i - s] && this.array[i - s][j - s] && this.array[i - s][j - s] === 1){
+                    s--;
                     boomb(i - s, j - s);
                     break;
                   } 
@@ -647,7 +708,7 @@
             }
             // breack racer in i, j
             function boomb(racer_i, racer_j){
-            
+                        
               the.steps_r.count = 0;
               the.steps_r.cycle = false;
 
@@ -655,14 +716,14 @@
               the.speed = 0;
 
               the.root = (function(road, i, j){
-                if (road[i][j - 1] === 0){
-                  return 0;
-                } else if (road[i + 1] && road[i + 1][j] === 0){
-                  return 2;
-                } else if (road[i][j + 1] === 0){
+                if (road[i][j - 1] !== 0){
                   return 4;
-                } else if (road[i - 1] && road[i - 1][j] === 0){
+                } else if (road[i + 1] && road[i + 1][j] !== 0){
                   return 6;
+                } else if (road[i][j + 1] !== 0){
+                  return 0;
+                } else if (road[i - 1] && road[i - 1][j] !== 0){
+                  return 2;
                 } else {
                   return 2;
                 }
@@ -673,7 +734,7 @@
           steps_for_racer: function(){
             
             var xy;
-            var viewBox;
+            var ij;
 
             // calcuts the go
             if (this.steps_r.count < this.steps_r.frames){
@@ -691,16 +752,18 @@
               xy = Raphael.getPointAtLength(this.steps_r.path, 
                                     this.steps_r.count * this.steps_r.bit);
 
-              viewBox = this.get_viewBox(xy.x, xy.y);
-              
-              this.renders_r.viewBox.x = viewBox.x;
-              this.renders_r.viewBox.y = viewBox.y;
-              this.renders_r.viewBox.w = viewBox.w;
-              this.renders_r.viewBox.h = viewBox.h;
+              this.renders_r.viewBox = this.get_viewBox(xy.x, xy.y);
                               
-              this.renders_r.racer.x = xy.x;
-              this.renders_r.racer.y = xy.y;
+              this.renders_r.racer = xy;
               
+              this.racer.coord.x = xy.x;
+              this.racer.coord.y = xy.y;
+              
+              ij = this.get_ij_from_xy(xy.x, xy.y);
+              
+              this.racer.coord.i = ij.i;
+              this.racer.coord.j = ij.j;
+
               if (this.steps_r.count == this.steps_r.frames - 1){
                 this.renders_r.path = '';
               } else {
@@ -755,7 +818,7 @@
                 }
               break;
               case 'left':
-                console.log('lefffffft!');
+                //console.log('lefffffft!');
                 if (this.current_speed_root.r == 0 && this.root == 0){
                   this.root = 7;
                 } else if (this.current_speed_root.r > 0 && this.current_speed_root.r <= this.root){
@@ -783,20 +846,25 @@
         this._gm_ = game;
       
         this.step = function(){
-          if (this._gm_.steps_r.cycle){
-            this._gm_.steps_for_racer();
-          }
-          // start calcuts params for render if it is needs
-          if (this._gm_.steps_r.count == 0){
-            if(game.speed > 0){
-              game.racer_go();
-            } else {
-              if (this._gm_.steps_r.cycle){
-                this._gm_.steps_r.cycle = false;
+        
+          if (!this._gm_.finish.end){
+            
+            this._gm_.check_finish();
+            
+            if (this._gm_.steps_r.cycle){
+              this._gm_.steps_for_racer();
+            }
+            // start calcuts params for render if it is needs
+            if (this._gm_.steps_r.count == 0){
+              if(game.speed > 0){
+                game.racer_go();
+              } else {
+                if (this._gm_.steps_r.cycle){
+                  this._gm_.steps_r.cycle = false;
+                }
               }
             }
-          }
-          
+          }          
         };
         
         this.render = function(){
