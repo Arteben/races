@@ -14,7 +14,7 @@
 
     var ENGINE = {};
 
-    ENGINE.game = {
+    ENGINE.main = {
       
       // create game board
       create: function(){
@@ -420,6 +420,77 @@
           point: paper.circle(0, 0, 0.3 * road_params.cell).attr({'fill': '#944'}),
         };
         
+        var popup = {
+          el: document.body.appendChild(document.createElement('div')),
+          set_start_attr: function(){
+            this.el.style.display = 'none';
+            this.el.style.position = 'absolute';
+            this.el.style.backgroundColor = 'rgb(0, 0, 0)';
+            this.el.style.padding = '10px';
+            this.el.style.color = '#944';
+            this.el.style.fontSize = '24px';
+          },
+          set_left_top: function(){
+            this.el.style.left = ((sizes.w - this.el.clientWidth) / 2) + 'px';
+            this.el.style.top = ((sizes.h - this.el.clientHeight) / 2) + 'px';
+            
+            console.log(((sizes.w - this.el.clientWidth) / 2) + 'px');
+          },
+          set_text: function(text){
+            this.el.innerHTML = text; 
+          }, 
+          set_visibility: function(num){
+            if (num === 0){
+              this.el.style.display = 'none';
+            } else{
+              if (this.el.style.display !== 'block'){
+                this.el.style.display = 'block';
+              }
+            }
+            
+            this.el.style.visibility = '' + num;
+          },
+          computation_start: function(persents){
+            
+              if (persents == 0){
+                  
+                  this.set_text('Для начала нажмите любую клавишу!');
+                  this.set_visibility(1 / 100);
+
+              } else if (persents < 30){
+                  
+                  this.set_text('3!');
+                  this.set_visibility(persents / 100);
+                  
+              } else if (persents < 60){
+                
+                  this.set_text('2!');
+                  this.set_visibility(persents / 100);
+                  
+              } else if (persents < 80){
+              
+                this.set_text('1!');
+                this.set_visibility(persents / 100);
+                  
+              } else if (persents < 99) {
+                
+                this.set_text('START!');
+                this.set_visibility(persents / 100);
+                
+              } else {
+                this.set_visibility(0);
+              }
+              
+               this.set_left_top();              
+          },
+        };
+        
+        var steps_popup = {
+          count: 0,
+          frames: 0,
+          go: false,
+        };
+        
         // controls the game
         var game = {
           params: road_params,
@@ -430,9 +501,11 @@
           racer: racer,
           steps_r: steps_racer,
           renders_r: renders_racer,
+          steps_up: steps_popup,
+          up: popup,
           speed: 0,
           // clock, begin - 0
-          root: 2,
+          root: 0,
           current_speed_root: {
             s: 0,
             r: 2,
@@ -440,7 +513,63 @@
           finish: {
             on: 0,
             end: false,
+          },
+          timer: 0,
+          // begin, main, end
+          status: '',
+          steps_start: function(){
             
+            if (this.steps_up.count == 0){
+              
+              console.log('waits keydown')
+              this.up.computation_start(0);
+              
+              if (this.steps_up.go){
+                this.steps_up.count++;
+              }
+              
+            } else if (this.steps_up.count < this.steps_up.frames){
+              
+              this.up.computation_start(100 * this.steps_up.count / this.steps_up.frames);            
+              this.steps_up.count++;
+            
+            } else {
+              if (this.steps_up.count == this.steps_up.frames){
+                this.up.computation_start(100);
+              }
+              
+              this.steps_up.count = 0;
+              this.status = 'main';              
+
+            }
+          },
+          // start_game!
+          start_game: function(){
+            
+            var start_ij = {
+              i: field.finish.point_up.i + 2,
+              j: Math.round((field.finish.point_down.j - field.finish.point_up.j) / 2),
+            };
+                    
+            var calc_xy = this.calcuts_x_y(start_ij.i, start_ij.j);         
+            
+            this.root = 2;
+            this.speed = 0;
+            this.finish.on = 0;
+            this.finish.end = false;
+            this.timer = 0;
+            this.status = 'begin';
+          
+            this.up.set_start_attr();
+                    
+            this.steps_up.frames = 100;        
+                    
+            this.racer.path.str += 'M' + calc_xy.x + ',' + calc_xy.y;        
+                    
+            this.set_racer({
+              i: start_ij.i,
+              j: start_ij.j, 
+            });    
           },
           get_ij_from_xy: function(x, y){
             
@@ -448,12 +577,9 @@
               i: Math.floor(x / this.params.cell),
               j: Math.floor(y / this.params.cell),
             };
-            
-            //this.svg.rect(ij.i * this.params.cell,ij.j * this.params.cell, this.params.cell, this.params.cell).attr({'fill': '#8DD'});
-            
+                        
             return ij;
           },
-          
           check_finish: (function(){
             
             var timeout;
@@ -482,6 +608,7 @@
                   } else {
                     console.log('finish!!!!');
                     this.finish.end = true;
+                    this.status = 'end';
                     this.speed = 0;
                   }
                 }    
@@ -499,7 +626,7 @@
           set_racer: function(coord){
 
             var xy = this.calcuts_x_y(coord.i, coord.j);
-            var params_view = this.get_viewBox(xy.x, xy.y);
+            var params_view = this.get_viewBox(xy.x, xy.y, this.steps_r.frames);
             
             this.racer.coord.i = coord.i;
             this.racer.coord.j = coord.j;
@@ -522,38 +649,69 @@
           get_viewBox: (function(){
           
             var w, h, x, y;
-            var scale = 1;
-            
-            w = sizes.w * scale;
-            h = sizes.h * scale;
+            var older_speed = 0;
+            var type_calcuts = 'qul';
+            var scale;
+            var add_scale = 0.7;
 
-            //console.log('sizes', h);
-
-            return function(x_racer,  y_racer){        
-                                              
-              if (this.params.size > w){
-                if (x_racer > (this.params.size - w / 2)){
-                  x = this.params.size - w;
-                } else if (x_racer < w / 2){
-                  x = 0
+            return function(x_racer,  y_racer, count){        
+                            
+              if (count === 1){ 
+                if (this.speed > older_speed){
+                  type_calcuts = 'up';
+                } else if (this.speed < older_speed) {                  
+                  type_calcuts = 'down';
                 } else {
-                  x = x_racer - w / 2;
+                  type_calcuts = 'qul';
                 }
-              } else {
-                x = x_racer - w / 2;
+                
+                older_speed = this.speed;
               }
               
-              if (this.params.size > h){
-                if (y_racer > (this.params.size - h / 2)){
-                  y = this.params.size - h;
-                } else if (y_racer < h / 2){
-                  y = 0;
-                } else {
-                  y = y_racer - h / 2;            
-                }
-              } else {
-                y = y_racer - h / 2;
+              //console.log('calcuts_scale', type_calcuts, this.speed, count);
+              
+              switch(type_calcuts){
+                case 'up':
+                  scale = add_scale + (older_speed - 1 + (1 / this.steps_r.frames * count)) * 0.1;
+                break;
+                case 'down':
+                  scale = add_scale + (older_speed + 1 - (1 / this.steps_r.frames * count)) * 0.1;
+                break;
+                case 'qul':
+                  scale = add_scale + older_speed* 0.1;
+                break
               }
+              
+              //console.log('scale', scale, count);
+              
+              w = sizes.w * scale;
+              h = sizes.h * scale;
+
+              //if (this.params.size > w){
+                //if (x_racer > (this.params.size - w / 2)){
+                  //x = this.params.size - w;
+                //} else if (x_racer < w / 2){
+                  //x = 0
+                //} else {
+                  //x = x_racer - w / 2;
+                //}
+              //} else {
+                //x = x_racer - w / 2;
+              //}
+                x = x_racer - w / 2;
+              //if (this.params.size > h){
+                //if (y_racer > (this.params.size - h / 2)){
+                  //y = this.params.size - h;
+                //} else if (y_racer < h / 2){
+                  //y = 0;
+                //} else {
+                  //y = y_racer - h / 2;            
+                //}
+              //} else {
+                //y = y_racer - h / 2;
+              //}
+              
+              y = y_racer - h / 2;
               
               //console.log('viewBox', x, y);
               
@@ -728,63 +886,70 @@
                   return 2;
                 }
               }(the.array, racer_i, racer_j));
+              
+              the.current_speed_root.s = the.speed;
+              the.current_speed_root.r = the.root;
+            
             }
+            
           },
           // calcuts x, y for next frame rendering racer  
-          steps_for_racer: function(){
+          steps_for_racer: (function(){
             
             var xy;
             var ij;
 
-            // calcuts the go
-            if (this.steps_r.count < this.steps_r.frames){
-              if (this.steps_r.count == 0){
-                this.steps_r.path = 'M' + this.racer.coord.x + ',' + this.racer.coord.y + 
-                                        'L' + this.steps_r.goal.x + ',' + this.steps_r.goal.y;
-                this.steps_r.bit = Raphael.getTotalLength(this.steps_r.path) / this.steps_r.frames;
+            return function(){
+              // calcuts the go
+              if (this.steps_r.count < this.steps_r.frames){
+                if (this.steps_r.count == 0){
+                  this.steps_r.path = 'M' + this.racer.coord.x + ',' + this.racer.coord.y + 
+                                          'L' + this.steps_r.goal.x + ',' + this.steps_r.goal.y;
+                  this.steps_r.bit = Raphael.getTotalLength(this.steps_r.path) / this.steps_r.frames;
+                  
+                  this.steps_r.begin_path = 'M' + this.racer.coord.x + ',' + this.racer.coord.y; 
+                                                      
+                  this.renders_r.status = true;
+                  this.steps_r.count++;
+                }
+
+                xy = Raphael.getPointAtLength(this.steps_r.path, 
+                                      this.steps_r.count * this.steps_r.bit);
                 
-                this.steps_r.begin_path = 'M' + this.racer.coord.x + ',' + this.racer.coord.y; 
-     
-                this.renders_r.status = true;
-                this.steps_r.count++;
-              }
+                this.renders_r.viewBox = this.get_viewBox(xy.x, xy.y, this.steps_r.count);
+                                
+                this.renders_r.racer = xy;
+                
+                this.racer.coord.x = xy.x;
+                this.racer.coord.y = xy.y;
+                
+                ij = this.get_ij_from_xy(xy.x, xy.y);
+                
+                this.racer.coord.i = ij.i;
+                this.racer.coord.j = ij.j;
 
-              xy = Raphael.getPointAtLength(this.steps_r.path, 
-                                    this.steps_r.count * this.steps_r.bit);
-
-              this.renders_r.viewBox = this.get_viewBox(xy.x, xy.y);
-                              
-              this.renders_r.racer = xy;
-              
-              this.racer.coord.x = xy.x;
-              this.racer.coord.y = xy.y;
-              
-              ij = this.get_ij_from_xy(xy.x, xy.y);
-              
-              this.racer.coord.i = ij.i;
-              this.racer.coord.j = ij.j;
-
-              if (this.steps_r.count == this.steps_r.frames - 1){
-                this.renders_r.path = '';
-              } else {
-                this.renders_r.path = this.steps_r.begin_path + 'L' + xy.x + ',' + xy.y;
-              }
-                          
-              this.steps_r.count++;
-            } else {
-            // end move for racer
-              this.steps_r.count = 0;
-              this.renders_r.status = false;
-              
-              this.racer.coord.i = this.steps_r.goal.i;
-              this.racer.coord.j = this.steps_r.goal.j;
-              this.racer.coord.x = this.steps_r.goal.x;
-              this.racer.coord.y = this.steps_r.goal.y;
+                if (this.steps_r.count == this.steps_r.frames - 1){
+                  this.renders_r.path = '';
+                } else {
+                  this.renders_r.path = this.steps_r.begin_path + 'L' + xy.x + ',' + xy.y;
+                }
                             
-              this.set_racer({i: this.steps_r.goal.i, j: this.steps_r.goal.j});
-            }
+                this.steps_r.count++;
+              } else {
+              // end move for racer
+                this.steps_r.count = 0;
+                this.renders_r.status = false;
+                
+                this.racer.coord.i = this.steps_r.goal.i;
+                this.racer.coord.j = this.steps_r.goal.j;
+                this.racer.coord.x = this.steps_r.goal.x;
+                this.racer.coord.y = this.steps_r.goal.y;
+                              
+                this.set_racer({i: this.steps_r.goal.i, j: this.steps_r.goal.j});
+              }
+            };
 
-          },
+          }()),
           //draw freme for move racer
           renders_for_racer: function(){
             this.racer.point.attr({
@@ -797,7 +962,7 @@
                                    
             this.racer.path_anim.attr({'path': this.renders_r.path});                       
           },
-          key_down: function(data){
+          key_down_for_racer: function(data){
                       
             switch(data.key){
               case 'up':
@@ -829,54 +994,59 @@
           },
         };
         
-        var start_ij = {
-          i: field.finish.point_up.i + 2,
-          j: Math.round((field.finish.point_down.j - field.finish.point_up.j) / 2),
-        }
-                
-        var calc_xy = game.calcuts_x_y(start_ij.i, start_ij.j);         
-                
-        game.racer.path.str += 'M' + calc_xy.x + ',' + calc_xy.y;        
-                
-        game.set_racer({
-          i: start_ij.i,
-          j: start_ij.j, 
-        });
-      
-        this._gm_ = game;
-      
-        this.step = function(){
+        game.start_game();
         
-          if (!this._gm_.finish.end){
-            
-            this._gm_.check_finish();
-            
-            if (this._gm_.steps_r.cycle){
-              this._gm_.steps_for_racer();
-            }
-            // start calcuts params for render if it is needs
-            if (this._gm_.steps_r.count == 0){
-              if(game.speed > 0){
-                game.racer_go();
-              } else {
-                if (this._gm_.steps_r.cycle){
-                  this._gm_.steps_r.cycle = false;
-                }
+        this._gm_ = game;
+        
+        this.step = function(){
+
+          switch(this._gm_.status){
+            case 'begin':
+              this._gm_.steps_start();
+            break;
+            case 'main':
+              this._gm_.check_finish();
+              
+              if (this._gm_.steps_r.cycle){
+                this._gm_.steps_for_racer();
               }
-            }
-          }          
+              // start calcuts params for render if it is needs
+              if (this._gm_.steps_r.count == 0){
+                if(game.speed > 0){
+                  game.racer_go();
+                } else {
+                  if (this._gm_.steps_r.cycle){
+                    this._gm_.steps_r.cycle = false;
+                    }
+                }
+              }            
+            break;
+            case 'end':
+              console.log('game_end!');
+            break;
+          }
         };
         
         this.render = function(){
+          
           if (this._gm_.renders_r.status){
-            game.renders_for_racer();
+            this._gm_.renders_for_racer();
           }
         };
         
         this.keydown = function(data){
-          game.key_down(data)
+          
+          switch (this._gm_.status){
+            case 'begin':
+              this._gm_.steps_up.go = true;
+            break;
+            case 'main':
+              game.key_down_for_racer(data)
+            break;
+            case 'end':
+            break;
+          }
         };
-
       },
     };
 
@@ -896,7 +1066,7 @@
       // call after loading
       ready: function(){
         
-        this.setState(ENGINE.game);
+        this.setState(ENGINE.main);
       },
       
       resize: function(){
