@@ -432,9 +432,7 @@
           },
           set_left_top: function(){
             this.el.style.left = ((sizes.w - this.el.clientWidth) / 2) + 'px';
-            this.el.style.top = ((sizes.h - this.el.clientHeight) / 2) + 'px';
-            
-            console.log(((sizes.w - this.el.clientWidth) / 2) + 'px');
+            this.el.style.top = ((sizes.h - this.el.clientHeight) / 2) + 'px';            
           },
           set_text: function(text){
             this.el.innerHTML = text; 
@@ -458,7 +456,7 @@
                   this.set_visibility(1 / 100);
 
               } else if (persents < 30){
-                  
+                                    
                   this.set_text('3!');
                   this.set_visibility(persents / 100);
                   
@@ -482,6 +480,11 @@
               }
               
                this.set_left_top();              
+          },
+          show_finish: function(res){
+            this.set_left_top();
+            this.set_visibility(100);
+            this.set_text('Ваш результат ' + res + "<br/> для рестарта игры нажмите любую кнопку!");
           },
         };
         
@@ -508,7 +511,7 @@
           root: 0,
           current_speed_root: {
             s: 0,
-            r: 2,
+            r: 0,
           },
           finish: {
             on: 0,
@@ -517,30 +520,32 @@
           timer: 0,
           // begin, main, end
           status: '',
+          restart: function(){
+            this.steps_r.count = 0;
+            this.steps_r.cycle = false;
+            this.renders_r.status = false;
+            this.racer.path_anim.attr({'path': ''});
+            this.racer.path.str = '';
+            this.timer = 0;
+            this.start_game();
+          },
           steps_start: function(){
             
             if (this.steps_up.count == 0){
-              
-              console.log('waits keydown')
-              this.up.computation_start(0);
-              
+                            
               if (this.steps_up.go){
                 this.steps_up.count++;
               }
               
             } else if (this.steps_up.count < this.steps_up.frames){
               
-              this.up.computation_start(100 * this.steps_up.count / this.steps_up.frames);            
               this.steps_up.count++;
             
             } else {
-              if (this.steps_up.count == this.steps_up.frames){
-                this.up.computation_start(100);
-              }
               
               this.steps_up.count = 0;
               this.status = 'main';              
-
+              
             }
           },
           // start_game!
@@ -555,13 +560,13 @@
             
             this.root = 2;
             this.speed = 0;
-            this.finish.on = 0;
-            this.finish.end = false;
-            this.timer = 0;
             this.status = 'begin';
-          
-            this.up.set_start_attr();
-                    
+            this.current_speed_root = {
+              s: this.root,
+              r: this.speed,
+            };      
+                
+            this.up.set_start_attr();                    
             this.steps_up.frames = 100;        
                     
             this.racer.path.str += 'M' + calc_xy.x + ',' + calc_xy.y;        
@@ -606,10 +611,10 @@
                       timeout = window.setTimeout(ink_timeout, 1000, this, false);
                     }
                   } else {
-                    console.log('finish!!!!');
                     this.finish.end = true;
                     this.status = 'end';
                     this.speed = 0;
+                    this.up.show_finish(this.timer); 
                   }
                 }    
               } else {
@@ -901,6 +906,9 @@
 
             return function(){
               // calcuts the go
+              
+              this.timer++;
+              
               if (this.steps_r.count < this.steps_r.frames){
                 if (this.steps_r.count == 0){
                   this.steps_r.path = 'M' + this.racer.coord.x + ',' + this.racer.coord.y + 
@@ -1012,8 +1020,9 @@
               }
               // start calcuts params for render if it is needs
               if (this._gm_.steps_r.count == 0){
-                if(game.speed > 0){
-                  game.racer_go();
+                console.log(this._gm_.speed);
+                if(this._gm_.speed > 0){
+                  this._gm_.racer_go();
                 } else {
                   if (this._gm_.steps_r.cycle){
                     this._gm_.steps_r.cycle = false;
@@ -1022,16 +1031,24 @@
               }            
             break;
             case 'end':
-              console.log('game_end!');
+              console.log('game_end!', this._gm_.timer);
             break;
           }
         };
         
         this.render = function(){
-          
-          if (this._gm_.renders_r.status){
-            this._gm_.renders_for_racer();
-          }
+          switch(this._gm_.status){
+            case 'begin':
+              this._gm_.up.computation_start(100 * this._gm_.steps_up.count / this._gm_.steps_up.frames);
+            break;
+            case 'main':
+              if (this._gm_.renders_r.status){
+                this._gm_.renders_for_racer();
+              }
+            break;
+            case 'end':
+            break;
+          }          
         };
         
         this.keydown = function(data){
@@ -1044,6 +1061,7 @@
               game.key_down_for_racer(data)
             break;
             case 'end':
+              this._gm_.restart();
             break;
           }
         };
