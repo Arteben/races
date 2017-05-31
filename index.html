@@ -28,7 +28,7 @@
           radius: 50,
           size: 0,
           attr_road: {'stroke': '#556', 'stroke-width': 5, 'fill': '#DDD'},
-          attr_island: {'stroke': '#556', 'stroke-width': 5, 'fill': "#999"},
+          attr_island: {'stroke': '#556', 'stroke-width': 5, 'fill': "#484"},
           attr_finish: {'stroke': '#BB3', 'stroke-width': 10},
           get_size: function(){
             this.size = this.cell * this.radius;
@@ -39,7 +39,7 @@
         
         this._road_p_ = road_params;
         
-        var speed = 40;
+        var speed = 50;
         
         document.body.style.backgroundColor = road_params.attr_island.fill;
         
@@ -386,6 +386,10 @@
           },
         };
         
+        //var steps_rival = {
+          //count: 0;
+        //};
+        
         // params for renders objects that moves
         var renders_racer = {        
           status: false,
@@ -402,24 +406,143 @@
           },
           path: '',
         };
-                
-        // params for racer
-        var racer = {
+
+        var proto_racers = {
+
+          speed: 0,
+          // clock, begin - 0
+          root: 0,
+          current_speed_root: {
+            s: 0,
+            r: 0,
+          },
+
+          finish_on: 0,
+
           // current coords racer
           coord: {
             i: 0,
             j: 0,
             x: 0,
             y: 0,
-          },          
-          path: {
-            el: paper.path("").attr({'stroke': '#333', 'stroke-width': 4}),
-            str: '',
           },
-          path_anim: paper.path("").attr({'stroke': '#000', 'stroke-width': 5}),
-          point: paper.circle(0, 0, 0.3 * road_params.cell).attr({'fill': '#944'}),
+          
+          point: null,
+          path: null,
+          path_anim: null,
+          
+          flay: [{s: 0, wait: 0}],
+          
+          cell: road_params.cell,
+          
+          del: function(){
+            this.point.remove();
+            this.path.el.remove();
+            this.path_anim.remove();
+          },
+          
+          create: function(){
+            
+            var fire = {
+              width: 8,
+              fill: false,
+              opacity: 0.9,
+              offsetx: 0,
+              offsety: 0,
+              color: 'rgb(255, 255, 100)'
+            };  
+            
+            var glow = {  
+              width: 6,
+              fill: false,
+              opacity: 0.8,
+              offsetx: 0,
+              offsety: 0,
+              color: this.glow,
+            };
+            
+            var s = this.cell;
+                  
+            this.path = {
+              el: paper.path("").glow(glow),
+              str: '',
+            };
+            
+            this.path_anim = paper.path("").glow(fire);
+
+            this.point = paper.path('').attr({'fill': this.fill, 'stroke-width': 1, 'stroke': '#000'});
+          },         
+          
+          set_path: function(type, path){
+            if (type == 'full'){
+                this.path.str += path;
+                this.path.el.attr({'path': this.path.str});            
+            } else {
+                this.path_anim.attr({'path': path});            
+            }
+          },
+          
+          set_racer: (function(){
+            
+            var path;
+            
+            var calc = function(xy, num, add){
+                switch(num){
+                  case '05':
+                    if (add){
+                      return xy + 0.25 * road_params.cell;
+                    } else {
+                      return xy -(0.25 * road_params.cell);
+                    }
+                  break;
+                  case '025':
+                    if (add) {
+                      return xy + 0.1 * road_params.cell;
+                    } else {
+                      return xy -(0.1 * road_params.cell);
+                    }
+                }
+            };
+                        
+            return function(x, y, root){
+                     
+              path = 'M' + calc(x, '05') + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '05') + 
+                          'L' + calc(x, '05', true) + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '025', true) + 'Z';
+
+              this.point.attr({'path': path, 'transform': 'r' + (root * 45)});
+            
+            };
+          }()),
         };
+                
+        var CreateRacer = function(glow, fill){
         
+          var xy;
+        
+          this.coord.i = field.finish.point_up.i + 2,
+          this.coord.j = Math.round((field.finish.point_down.j - field.finish.point_up.j) / 2),
+        
+          this.glow = glow;
+          this.fill = fill;
+          this.create();
+      
+          this.path_anim.attr('path', '');
+          this.path.str = '';
+          this.path.el.attr('path', '');
+          
+          this.flay = [{s: 0, wait: 0}];
+          
+          this.root = 2;
+          this.speed = 0;
+          this.current_speed_root = {
+            s: this.speed,
+            r: this.root,
+          };      
+              
+        };        
+        
+        CreateRacer.prototype = proto_racers;
+                
         var popup = {
           el: document.body.appendChild(document.createElement('div')),
           set_start_attr: function(){
@@ -501,32 +624,31 @@
           svg: paper,
           array: road_array,
           field: field,
-          racer: racer,
+          racer: null,
           steps_r: steps_racer,
           renders_r: renders_racer,
           steps_up: steps_popup,
           up: popup,
-          speed: 0,
-          // clock, begin - 0
-          root: 0,
-          current_speed_root: {
-            s: 0,
-            r: 0,
-          },
-          finish: {
-            on: 0,
-            end: false,
-          },
-          timer: 0,
           // begin, main, end
           status: '',
           restart: function(){
             this.steps_r.count = 0;
             this.steps_r.cycle = false;
             this.renders_r.status = false;
-            this.racer.path_anim.attr({'path': ''});
-            this.racer.path.str = '';
             this.timer = 0;
+            
+            console.log('[');
+            for (var i in this.racer.flay){
+              console.log('{');
+              for (var prop in this.racer.flay[i]){
+                console.log("'" + prop + "'" + ': ' + this.racer.flay[i][prop]);
+              }
+              console.log('}, ');
+            }
+            console.log(']');
+            
+            this.racer.del();
+            
             this.start_game();
           },
           steps_start: function(){
@@ -550,30 +672,23 @@
           },
           // start_game!
           start_game: function(){
-            
-            var start_ij = {
-              i: field.finish.point_up.i + 2,
-              j: Math.round((field.finish.point_down.j - field.finish.point_up.j) / 2),
-            };
-                    
-            var calc_xy = this.calcuts_x_y(start_ij.i, start_ij.j);         
-            
-            this.root = 2;
-            this.speed = 0;
-            this.status = 'begin';
-            this.current_speed_root = {
-              s: this.root,
-              r: this.speed,
-            };      
+          
+            var xy;
+          
+            this.racer = new CreateRacer('#FFD', "#D44");
+          
+            this.status = 'begin';            
                 
             this.up.set_start_attr();                    
             this.steps_up.frames = 100;        
-                    
-            this.racer.path.str += 'M' + calc_xy.x + ',' + calc_xy.y;        
-                    
+            
+            xy = this.calcuts_x_y(this.racer.coord.i, this.racer.coord.j);
+            
+            this.racer.set_path('full', 'M' + xy.x + ',' + xy.y);
+                                        
             this.set_racer({
-              i: start_ij.i,
-              j: start_ij.j, 
+              i: this.racer.coord.i,
+              j: this.racer.coord.j, 
             });    
           },
           get_ij_from_xy: function(x, y){
@@ -592,9 +707,9 @@
             var ink_timeout = function(the, type){
                             
               if (type){
-                the.finish.on++;
+                the.racer.finish_on++;
               } else {
-                the.finish.on--;
+                the.racer.finish_on--;
               }               
                             
               window.clearTimeout(timeout);
@@ -604,16 +719,15 @@
             
             return function(){
                             
-              if (this.root > 0 && this.root < 4){
+              if (this.racer.root > 0 && this.racer.root < 4){
                 if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
-                  if (this.finish.on > 0){
+                  if (this.racer.finish_on > 0){
                     if (timeout === undefined){
                       timeout = window.setTimeout(ink_timeout, 1000, this, false);
                     }
                   } else {
-                    this.finish.end = true;
                     this.status = 'end';
-                    this.speed = 0;
+                    this.racer.speed = 0;
                     this.up.show_finish(this.timer); 
                   }
                 }    
@@ -637,14 +751,9 @@
             this.racer.coord.j = coord.j;
             this.racer.coord.x = xy.x;
             this.racer.coord.y = xy.y;
-                                                            
-            this.racer.point.attr({
-              cx: xy.x,
-              cy: xy.y,
-            });
-            
-            this.racer.path.str += 'L' + xy.x + ',' + xy.y;
-            this.racer.path.el.attr({'path': this.racer.path.str});
+                  
+            this.racer.set_racer(xy.x, xy.y, this.racer.current_speed_root.r);                                                
+            this.racer.set_path('full', 'L' + xy.x + ',' + xy.y);
             
             //console.log(this.racer.path.str);
             
@@ -662,15 +771,15 @@
             return function(x_racer,  y_racer, count){        
                             
               if (count === 1){ 
-                if (this.speed > older_speed){
+                if (this.racer.speed > older_speed){
                   type_calcuts = 'up';
-                } else if (this.speed < older_speed) {                  
+                } else if (this.racer.speed < older_speed) {                  
                   type_calcuts = 'down';
                 } else {
                   type_calcuts = 'qul';
                 }
                 
-                older_speed = this.speed;
+                older_speed = this.racer.speed;
               }
               
               //console.log('calcuts_scale', type_calcuts, this.speed, count);
@@ -687,39 +796,11 @@
                 break
               }
               
-              //console.log('scale', scale, count);
-              
               w = sizes.w * scale;
               h = sizes.h * scale;
-
-              //if (this.params.size > w){
-                //if (x_racer > (this.params.size - w / 2)){
-                  //x = this.params.size - w;
-                //} else if (x_racer < w / 2){
-                  //x = 0
-                //} else {
-                  //x = x_racer - w / 2;
-                //}
-              //} else {
-                //x = x_racer - w / 2;
-              //}
-                x = x_racer - w / 2;
-              //if (this.params.size > h){
-                //if (y_racer > (this.params.size - h / 2)){
-                  //y = this.params.size - h;
-                //} else if (y_racer < h / 2){
-                  //y = 0;
-                //} else {
-                  //y = y_racer - h / 2;            
-                //}
-              //} else {
-                //y = y_racer - h / 2;
-              //}
-              
+              x = x_racer - w / 2;              
               y = y_racer - h / 2;
-              
-              //console.log('viewBox', x, y);
-              
+                            
               return {
                 x: x,
                 y: y,
@@ -743,9 +824,9 @@
             var j = this.racer.coord.j;
             var the = this;
             
-            switch (this.root){
+            switch (this.racer.root){
               case 0:
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                                                       
                   if (this.array[i][j - s] && this.array[i][j - s] === 1){
                                         
@@ -754,14 +835,14 @@
                     break;
                   } 
                                                       
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i, j - s);                    
                   }
 
                 }
               break;
               case 1:
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i + s] && this.array[i + s][j - s] && this.array[i + s][j - s] === 1){
                     
                     s--;
@@ -769,90 +850,94 @@
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i + s, j - s);
                   }
                 }
               break;
               case 2: 
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i + s] && this.array[i + s][j] && this.array[i + s][j] === 1){
                     s--;                                        
                     boomb(i + s, j);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i + s, j);
                   }
                 }
               break;
               case 3: 
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i + s] && this.array[i + s][j + s] && this.array[i + s][j + s] === 1){
                     s--;
                     boomb(i + s, j + s);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i + s, j + s);
                   }
                 }
               break;
               case 4: 
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i][j + s] && this.array[i][j + s] === 1){
                     s--;
                     boomb(i, j + s);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i, j + s);
                   }
                 }              
               break;
               case 5: 
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i - s] && this.array[i - s][j + s] && this.array[i - s][j + s] === 1){
                     s--;
                     boomb(i - s, j + s);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i - s, j + s);
                   }
                 }
               break;
               case 6:
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i - s] && this.array[i - s][j] && this.array[i - s][j] === 1){
                     s--;
                     boomb(i - s, j);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i - s, j);
                   }
                 }
               break;
               case 7: 
-                for (s = 1; s <= this.speed; s++ ){
+                for (s = 1; s <= this.racer.speed; s++ ){
                   if (this.array[i - s] && this.array[i - s][j - s] && this.array[i - s][j - s] === 1){
                     s--;
                     boomb(i - s, j - s);
                     break;
                   } 
                   
-                  if (s == this.speed){
+                  if (s == this.racer.speed){
                     set_goal(i - s, j - s);
                   }
                 }
               break;
             }
+            
+            this.racer.current_speed_root.s = this.racer.speed;
+            this.racer.current_speed_root.r = this.racer.root;
+            
             // move racer in i, j
             function set_goal(goal_i, goal_j){
               
@@ -863,11 +948,6 @@
               steps_racer.goal.j = goal_j;
               steps_racer.goal.x = xy.x;
               steps_racer.goal.y = xy.y;
-
-              the.current_speed_root.s = the.speed;
-              the.current_speed_root.r = the.root;
-
-              //console.log('racer go in', goal_i, goal_j);
             }
             // breack racer in i, j
             function boomb(racer_i, racer_j){
@@ -876,9 +956,9 @@
               the.steps_r.cycle = false;
 
               the.set_racer({i:racer_i, j:racer_j});
-              the.speed = 0;
+              the.racer.speed = 0;
 
-              the.root = (function(road, i, j){
+              the.racer.root = (function(road, i, j){
                 if (road[i][j - 1] !== 0){
                   return 4;
                 } else if (road[i + 1] && road[i + 1][j] !== 0){
@@ -891,9 +971,6 @@
                   return 2;
                 }
               }(the.array, racer_i, racer_j));
-              
-              the.current_speed_root.s = the.speed;
-              the.current_speed_root.r = the.root;
             
             }
             
@@ -960,42 +1037,39 @@
           }()),
           //draw freme for move racer
           renders_for_racer: function(){
-            this.racer.point.attr({
-              cx: this.renders_r.racer.x,
-              cy: this.renders_r.racer.y,
-            });
+                        
+            this.racer.set_racer(this.renders_r.racer.x, this.renders_r.racer.y, this.racer.current_speed_root.r);
                           
             this.svg.setViewBox(this.renders_r.viewBox.x, this.renders_r.viewBox.y,
                                    this.renders_r.viewBox.w, this.renders_r.viewBox.h);
                                    
-            this.racer.path_anim.attr({'path': this.renders_r.path});                       
+            this.racer.set_path('anim', this.renders_r.path);                       
           },
           key_down_for_racer: function(data){
                       
             switch(data.key){
               case 'up':
-                if (this.speed < 10 && this.current_speed_root.s >= this.speed){
-                  this.speed++;
+                if (this.racer.speed < 10 && this.racer.current_speed_root.s >= this.racer.speed){
+                  this.racer.speed++;
                 }
               break;
               case 'down':
-                if (this.speed > 0 && this.current_speed_root.s <= this.speed){
-                  this.speed--;
+                if (this.racer.speed > 0 && this.racer.current_speed_root.s <= this.racer.speed){
+                  this.racer.speed--;
                 }
               break;
               case 'right':
-                if (this.current_speed_root.r == 7 && this.root == 7){
-                  this.root = 0;
-                } else if (this.current_speed_root.r < 7 && this.current_speed_root.r >= this.root){
-                  this.root++;
+                if (this.racer.current_speed_root.r == 7 && this.racer.root == 7){
+                  this.racer.root = 0;
+                } else if (this.racer.current_speed_root.r < 7 && this.racer.current_speed_root.r >= this.racer.root){
+                  this.racer.root++;
                 }
               break;
               case 'left':
-                //console.log('lefffffft!');
-                if (this.current_speed_root.r == 0 && this.root == 0){
-                  this.root = 7;
-                } else if (this.current_speed_root.r > 0 && this.current_speed_root.r <= this.root){
-                  this.root--;
+                if (this.racer.current_speed_root.r == 0 && this.racer.root == 0){
+                  this.racer.root = 7;
+                } else if (this.racer.current_speed_root.r > 0 && this.racer.current_speed_root.r <= this.racer.root){
+                  this.racer.root--;
                 }
               break;
             }
@@ -1013,6 +1087,19 @@
               this._gm_.steps_start();
             break;
             case 'main':
+            
+              if (this._gm_.steps_r.count == 0){
+                if (this._gm_.speed > 0){
+                  this._gm_.racer.flay.push({s: this._gm_.speed, r: this._gm_.root});
+                } else {
+                  if (this._gm_.racer.flay[this._gm_.racer.flay.length - 1].s === 0){
+                    this._gm_.racer.flay[this._gm_.racer.flay.length - 1].wait++;
+                  } else {
+                    this._gm_.racer.flay.push({s: 0, wait: 0});
+                  }
+                }
+              }
+            
               this._gm_.check_finish();
               
               if (this._gm_.steps_r.cycle){
@@ -1020,18 +1107,17 @@
               }
               // start calcuts params for render if it is needs
               if (this._gm_.steps_r.count == 0){
-                console.log(this._gm_.speed);
-                if(this._gm_.speed > 0){
+                if(this._gm_.racer.speed > 0){
                   this._gm_.racer_go();
                 } else {
                   if (this._gm_.steps_r.cycle){
-                    this._gm_.steps_r.cycle = false;
+                      this._gm_.steps_r.cycle = false;
                     }
                 }
               }            
             break;
             case 'end':
-              console.log('game_end!', this._gm_.timer);
+              //console.log('game_end!', this._gm_.timer);
             break;
           }
         };
