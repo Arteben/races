@@ -354,9 +354,7 @@
           };
           
           draw_and_check_root();
-          
-          //console.log(path);
-          
+                    
           return_field = {            
             road: svg.path(road).attr(p.attr_road),
             island: svg.path(island).attr(p.attr_island),
@@ -373,176 +371,175 @@
         var steps_rival = (function(){ 
         
         return {
-        time: 499,
+        time: 458,
+        frames: 20,
+        start: {
+          i: 24,
+          j: 9,
+        },
         array: [  
- {  
-  's': 0,  
-  'wait': 2,  
- },  
- {  
-  's': 1,  
-  'r': 2,  
-  'i': 25,  
-  'j': 5,  
- },  
- {  
-  's': 2,  
-  'r': 2,  
-  'i': 26,  
-  'j': 5,  
- },  
- {  
-  's': 3,  
-  'r': 2,  
-  'i': 28,  
-  'j': 5,  
- },  
- {  
-  's': 4,  
-  'r': 2,  
-  'i': 31,  
-  'j': 5,  
- },  
- {  
-  's': 4,  
-  'r': 3,  
-  'i': 35,  
-  'j': 5,  
- },  
- {  
-  's': 4,  
-  'r': 4,  
-  'i': 39,  
-  'j': 9,  
- },  
- {  
-  's': 5,  
-  'r': 4,  
-  'i': 39,  
-  'j': 13,  
- },  
- {  
-  's': 5,  
-  'r': 4,  
-  'i': 39,  
-  'j': 18,  
- },  
- {  
-  's': 5,  
-  'r': 4,  
-  'i': 39,  
-  'j': 23,  
- },  
- {  
-  's': 5,  
-  'r': 4,  
-  'i': 39,  
-  'j': 28,  
- },  
- {  
-  's': 5,  
-  'r': 4,  
-  'i': 39,  
-  'j': 33,  
- },  
- {  
-  's': 5,  
-  'r': 5,  
-  'i': 39,  
-  'j': 38,  
- },  
- {  
-  's': 5,  
-  'r': 6,  
-  'i': 34,  
-  'j': 43,  
- },  
- {  
-  's': 5,  
-  'r': 6,  
-  'i': 29,  
-  'j': 43,  
- },  
- {  
-  's': 6,  
-  'r': 6,  
-  'i': 24,  
-  'j': 43,  
- },  
- {  
-  's': 6,  
-  'r': 6,  
-  'i': 18,  
-  'j': 43,  
- },  
- {  
-  's': 6,  
-  'r': 7,  
-  'i': 12,  
-  'j': 43,  
- },  
- {  
-  's': 6,  
-  'r': 0,  
-  'i': 6,  
-  'j': 37,  
- },  
- {  
-  's': 6,  
-  'r': 0,  
-  'i': 6,  
-  'j': 31,  
- },  
- {  
-  's': 6,  
-  'r': 0,  
-  'i': 6,  
-  'j': 25,  
- },  
- {  
-  's': 6,  
-  'r': 0,  
-  'i': 6,  
-  'j': 19,  
- },  
- {  
-  's': 6,  
-  'r': 0,  
-  'i': 6,  
-  'j': 13,  
- },  
- {  
-  's': 6,  
-  'r': 1,  
-  'i': 6,  
-  'j': 7,  
- },  
- {  
-  's': 6,  
-  'r': 2,  
-  'i': 12,  
-  'j': 1,  
- },  
- {  
-  's': 6,  
-  'r': 2,  
-  'i': 18,  
-  'j': 1,  
- },  
- {  
-  's': 6,  
-  'r': 2,  
-  'i': 24,  
-  'j': 1,
-  'end': 'end',
- },  
-],
-}  ;
+           {  
+            's': 0,  
+            'wait': 8,  
+           },  
+           {  
+            's': 1,  
+            'r': 2,  
+            'i': 24,  
+            'j': 9,  
+           },  
+           {  
+            's': 2,  
+            'r': 2,  
+            'i': 25,  
+            'j': 9,  
+           },  
+           {  
+            's': 3,  
+            'r': 2,  
+            'i': 27,  
+            'j': 9,  
+           },  
+           {  
+            's': 4,  
+            'r': 2,  
+            'i': 30,  
+            'j': 9,  
+           },  
+           {  
+            's': 4,  
+            'r': 3,  
+            'i': 34,  
+            'j': 9,  
+           },  
+           {  
+            's': 4,  
+            'r': 4,  
+            'i': 38,  
+            'j': 13,  
+           },  
+           {  
+            's': 4,  
+            'r': 4,  
+            'i': 38,  
+            'j': 17,  
+           },  
+           {  
+            's': 4,  
+            'r': 4,  
+            'i': 38,  
+            'j': 21,  
+           },  
+           {  
+            's': 4,  
+            'r': 4,  
+            'i': 38,  
+            'j': 25,  
+           },  
+           {  
+            's': 5,  
+            'r': 4,  
+            'i': 38,  
+            'j': 29,  
+           },  
+           {  
+            's': 5,  
+            'r': 5,  
+            'i': 38,  
+            'j': 34,  
+           },  
+           {  
+            's': 5,  
+            'r': 6,  
+            'i': 33,  
+            'j': 39,  
+           },  
+           {  
+            's': 5,  
+            'r': 6,  
+            'i': 28,  
+            'j': 39,  
+           },  
+           {  
+            's': 5,  
+            'r': 6,  
+            'i': 23,  
+            'j': 39,  
+           },  
+           {  
+            's': 5,  
+            'r': 6,  
+            'i': 18,  
+            'j': 39,  
+           },  
+           {  
+            's': 5,  
+            'r': 7,  
+            'i': 13,  
+            'j': 39,  
+           },  
+           {  
+            's': 5,  
+            'r': 0,  
+            'i': 8,  
+            'j': 34,  
+           },  
+           {  
+            's': 5,  
+            'r': 0,  
+            'i': 8,  
+            'j': 29,  
+           },  
+           {  
+            's': 6,  
+            'r': 0,  
+            'i': 8,  
+            'j': 24,  
+           },  
+           {  
+            's': 6,  
+            'r': 0,  
+            'i': 8,  
+            'j': 18,  
+           },  
+           {  
+            's': 6,  
+            'r': 1,  
+            'i': 8,  
+            'j': 12,  
+           },  
+           {  
+            's': 6,  
+            'r': 2,  
+            'i': 14,  
+            'j': 6,  
+           },  
+           {  
+            's': 6,  
+            'r': 2,  
+            'i': 20,  
+            'j': 6,  
+           },  
+           {  
+            's': 6,  
+            'r': 2,  
+            'i': 26,  
+            'j': 6,  
+            'time': 458,  
+            'frames': 20,  
+            'start_i': 24,  
+            'start_j': 9,  
+           },  
+          ]  
+
+        ,}  ;
         }());
         
         var proto_racers = {
           
           cell: road_params.cell,
+                    
+          frames: 1000 / speed, 
             
           // remove racer from road 
           del: function(){
@@ -554,32 +551,27 @@
           create: function(){
             
             var fire = {
-              width: 8,
+              width: this.cell * 0.8,
               fill: false,
-              opacity: 0.9,
+              opacity: 0.8,
               offsetx: 0,
               offsety: 0,
               color: this.fire
             };  
             
             var glow = {  
-              width: 8,
+              width: this.cell * 0.4,
               fill: false,
-              opacity: 0.6,
+              opacity: 0.2,
               offsetx: 0,
               offsety: 0,
-              color: '#FFF',
+              color: this.fire,
             };
             
             var s = this.cell;
             
-            var path_str = 'M' + this.coord.x +  ',' + this.coord.y;
+            this.path.el = paper.path(this.path.str).glow(glow);
                   
-            this.path = {
-              str: path_str,
-              el: paper.path(path_str).glow(glow),
-            };
-            
             this.path_anim = paper.path("").glow(fire);
 
             this.point = paper.path('').attr({'fill': this.fill, 'stroke-width': 1, 'stroke': '#000'});
@@ -593,7 +585,7 @@
                 this.path_anim.attr({'path': path});            
             }
           },
-          
+  
           set_racer: (function(){
             
             var path;
@@ -615,24 +607,165 @@
                     }
                 }
             };
-                        
-            return function(x, y, root){
-                     
-              path = 'M' + calc(x, '05') + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '05') + 
-                          'L' + calc(x, '05', true) + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '025', true) + 'Z';
-
-              this.point.attr({'path': path, 'transform': 'r' + (root * 45)});
             
+            var indent_x = 0.2;
+            var indent_y = 0.2;
+            
+            var get_indent = function(count){
+              
+              var root = count % 7;
+                            
+              switch(root){
+                case 0:
+                  return {
+                    x: 0,
+                    y: -(indent_y),
+                  };
+                break;
+                 case 1:
+                  return {
+                    x: indent_x,
+                    y: -(indent_y),
+                  };
+                break;
+                case 2:
+                  return {
+                    x: indent_x,
+                    y: 0,
+                  };
+                break;
+                case 3:
+                  return {
+                    x: indent_x,
+                    y: indent_y,
+                  };
+                break;
+                case 4:
+                  return {
+                    x: 0,
+                    y: indent_y,
+                  };
+                break;
+                case 5:
+                  return {
+                    x: -(indent_x),
+                    y: indent_y,
+                  };
+                break;
+                case 6:
+                  return {
+                    x: -(indent_x),
+                    y: 0,
+                  };
+                break;
+                case 6:
+                  return {
+                    x: -(indent_x),
+                    y: -(indent_y),
+                  };
+                break;
+              }
+            }
+            
+            var xy;
+            
+            var get_path = function(x, y, root){
+              switch(root){
+                case 0:
+                  return 'M' + calc(x, '05') + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '05') + 
+                          'L' + calc(x, '05', true) + ',' + calc(y, '05', true) + 'L' + x + ',' + calc(y, '025', true) + 'Z';
+                break;
+                case 1:
+                  return 'M' + calc(x, '05') + ',' + calc(y, '025') + 'L' + calc(x, '05', true) + ',' + calc(y, '05') + 
+                          'L' + calc(x, '025', true) + ',' + calc(y, '05', true) + 'L' + x + ',' + y + 'Z';
+                break;
+                case 2:
+                  return 'M' + calc(x, '05') + ',' + calc(y, '05') + 'L' + calc(x, '05', true) + ',' + y + 
+                          'L' + calc(x, '05') + ',' + calc(y, '05', true) + 'L' + calc(x, '025') + ',' + y + 'Z';
+                break;
+                case 3:
+                  return 'M' + calc(x, '025', true) + ',' + calc(y, '05') + 'L' + calc(x, '05', true) + ',' + calc(y, '05', true) + 
+                          'L' + calc(x, '05') + ',' + calc(y, '025', true) + 'L' + x + ',' + y + 'Z';
+                break;
+                case 4:
+                  return 'M' + calc(x, '05', true) + ',' + calc(y, '05') + 'L' + x + ',' + calc(y, '05', true) + 
+                          'L' + calc(x, '05') + ',' + calc(y, '05') + 'L' + x + ',' + calc(y, '025') + 'Z';
+                break;
+                case 5:
+                  return 'M' + calc(x, '05', true) + ',' + calc(y, '025', true) + 'L' + calc(x, '05') + ',' + calc(y, '05', true) + 
+                          'L' + calc(x, '025') + ',' + calc(y, '05') + 'L' + x + ',' + y + 'Z';
+                break;
+                case 6:
+                  return 'M' + calc(x, '05', true) + ',' + calc(y, '05', true) + 'L' + calc(x, '05') + ',' + y + 
+                          'L' + calc(x, '05', true) + ',' + calc(y, '05') + 'L' + calc(x, '025', true) + ',' + y + 'Z';
+                break;
+                case 7:
+                  return 'M' + calc(x, '025') + ',' + calc(y, '05', true) + 'L' + calc(x, '05') + ',' + calc(y, '05') + 
+                          'L' + calc(x, '05', true) + ',' + calc(y, '025') + 'L' + x + ',' + y + 'Z';
+                break;
+              }
+            };
+                                
+            return function(x, y, root){
+                        
+              xy = get_indent(this.steps.count);
+            
+              x += xy.x;
+              y += xy.y;
+                
+              path = get_path(x, y, root);
+
+              this.point.attr('path', path);
+            };
+          }()),
+          calcuts_x_y: function(i, j){
+            return {
+              x: i * this.cell + this.cell / 2,
+              y: j * this.cell + this.cell / 2,
+            }
+          },
+          set: (function(){
+            
+            var xy;
+            var params_view;
+            
+            return function(i, j){
+            
+              xy = this.calcuts_x_y(i, j);
+              
+              if (this.type == 'user'){
+                params_view = this.set_viewBox(xy.x, xy.y, this.frames);
+              }
+                            
+              this.coord.i = i;
+              this.coord.j = j;
+              this.coord.x = xy.x;
+              this.coord.y = xy.y;
+              
+              if (this.type == 'user'){
+                this.set_racer(xy.x, xy.y, this.current_speed_root.r);
+              } else {
+                this.set_racer(xy.x, xy.y, this.root);
+              }
+                                                              
+              this.set_path('anim', '');
+              this.set_path('full', 'L' + xy.x + ',' + xy.y);
+                            
             };
           }()),
         };
                 
-        var CreateRacer = function(coord, user, fire, fill){
+        var CreateRacer = function(i, j, user, fire, fill){
         
           var xy;
 
           this.root = 2;
           this.speed = 0;
+          
+          this.start = {
+            i: i,
+            j: j,  
+          };
           
           // for racer of control user
           if (user){
@@ -647,8 +780,7 @@
                 set: false,
                 x: 0,
                 y: 0,
-                w: 0,
-                h: 0,
+                count: 0,
               },
               path: '',
             };
@@ -678,6 +810,64 @@
               r: this.root,
             };
             
+            this.set_viewBox = (function(){
+          
+              var w, h, x, y;
+              var older_level = 0;
+              var type_calcuts = 'qul';
+              var scale;
+              var add_scale = 0.4;
+              var frames = proto_racers.frames;
+              var svg = paper;
+              var s = sizes;
+              var level;
+              var multy = 0.4;
+              
+              return function (x_racer,  y_racer, count){        
+          
+                if (this.current_speed_root.s == 0){
+                  older_level = 0;
+                }
+                                              
+                level = Math.floor(this.current_speed_root.s / 3);
+          
+                if (count === 1){ 
+                  if (level > older_level){
+                    type_calcuts = 'up';
+                  } else if (level < older_level) {                  
+                    type_calcuts = 'down';
+                  } else {
+                    type_calcuts = 'qul';
+                  }
+                  
+                  older_level = level;
+                }
+                                
+                switch(type_calcuts){
+                  case 'up':
+                    scale = (older_level - 1 + (1 / frames * count)) * multy;
+                  break;
+                  case 'down':
+                    scale = (older_level + 1 - (1 / frames * count)) * multy;
+                  break;
+                  case 'qul':
+                    scale = older_level * multy;
+                  break
+                }
+                
+                console.log( type_calcuts, this.current_speed_root.s, level);
+                 
+                scale += add_scale;
+                
+                w = s.w * scale;
+                h = s.h * scale;
+                x = x_racer - w / 2;              
+                y = y_racer - h / 2;
+                
+                svg.setViewBox(x, y, w, h);                              
+              };
+            }());
+            
           } else {
            
             this.renders = {
@@ -706,20 +896,36 @@
 
             this.flay = steps_rival.array;
             this.time = steps_rival.time;
-
+            
             this.type = 'rival'; 
           }        
           
-          this.coord = coord;
+          this.coord = {
+            i: 0,
+            j: 0,
+            x: 0,
+            y: 0,
+          };
+          
+          xy = this.calcuts_x_y(i, j);
+          
+          this.path = {
+              str: 'M' + xy.x + ',' + xy.y,
+              el: null,
+          };
+          
+          this.point = null;
+          this.path_anim = null;
+            
           this.fire = fire;
           this.fill = fill;
       
           this.create();
-                          
-        };        
+          this.set(i, j);
+        };      
         
         CreateRacer.prototype = proto_racers;
-                
+                        
         var popup = {
           el: document.body.appendChild(document.createElement('div')),
           set_start_attr: function(){
@@ -781,8 +987,10 @@
               
                this.set_left_top();              
           },
+          
+          rend_finish: true,
+          
           show_finish: function(res, wins){
-            this.set_left_top();
             this.set_visibility(100);
             this.set_text('Победитель ' + wins  + ' c результатом ' + res + "<br/> для рестарта игры нажмите любую кнопку!");
           },
@@ -812,6 +1020,7 @@
           timer: 0,
           restart: function(){
 
+            this.up.rend_finish = true;
             this.timer = 0;
             
             //console.log('[');
@@ -862,22 +1071,15 @@
             this.steps_up.frames = 100;        
             
             ij = {
-              i: this.field.finish.point_up.i + 2,
-              j: Math.round((this.field.finish.point_down.j - this.field.finish.point_up.j) / 2),
+              i: this.field.finish.point_up.i + 1,
+              j: Math.round(Math.random() * (this.field.finish.point_down.j - this.field.finish.point_up.j) + 
+                                                                                this.field.finish.point_up.j),
             };
                                     
-            xy = this.calcuts_x_y(ij.i, ij.j);
-                        
-            this.rival = new CreateRacer({i: ij.i, j: ij.j, x: xy.x, y: xy.y}, 
-                                          false, '#AAF', "#44D");                                                    
+            this.rival = new CreateRacer(steps_rival.start.i, steps_rival.start.j, false, '#AAF', "#44D");                                                    
                                           
-            this.racer = new CreateRacer({i: ij.i, j: ij.j, x: xy.x, y: xy.y}, 
-                                          true, '#FF6', "#D44");                                                    
-
-            this.set_racer_rival(this.rival, {i: ij.i, j: ij.j});                
-
-            this.set_racer_rival(this.racer, {i: ij.i, j: ij.j});
-            
+            this.racer = new CreateRacer(ij.i, ij.j, true, '#FF6', "#D44");                                                    
+                        
           },
           get_ij_from_xy: function(x, y){
             return {
@@ -911,6 +1113,8 @@
                       timeout = window.setTimeout(ink_timeout, 1000, this, false);
                     }
                   } else {
+                    this.racer.renders.status = false;
+                    this.racer.steps.cycle.status = false;
                     this.wins = 'user';
                     this.status = 'end';
                     this.racer.speed = 0;
@@ -926,95 +1130,16 @@
             };
             
           }()),  
-          // set racer in road without animate
-          set_racer_rival: (function(){
-            
-            var xy;
-            var params_view;
-            
-            return function(racer, coord){
-            
-              xy = this.calcuts_x_y(coord.i, coord.j);
-              
-              if (racer.type == 'user'){
-                params_view = this.get_viewBox(xy.x, xy.y, this.frames);
-                paper.setViewBox(params_view.x, params_view.y, params_view.w, params_view.h);
-              }
-              
-              racer.coord.i = coord.i;
-              racer.coord.j = coord.j;
-              racer.coord.x = xy.x;
-              racer.coord.y = xy.y;
-              
-              racer.set_racer(xy.x, xy.y, this.racer.current_speed_root.r);                                                
-              racer.set_path('full', 'L' + xy.x + ',' + xy.y);
-                            
-            };
-          }()),
-          // gets params for viewBox 
-          get_viewBox: (function(){
-          
-            var w, h, x, y;
-            var older_speed = 0;
-            var type_calcuts = 'qul';
-            var scale;
-            var add_scale = 0.7;
-            var frames;
-
-            return function(x_racer,  y_racer, count){        
-                            
-              if (count === 1){ 
-                if (this.racer.speed > older_speed){
-                  type_calcuts = 'up';
-                } else if (this.racer.speed < older_speed) {                  
-                  type_calcuts = 'down';
-                } else {
-                  type_calcuts = 'qul';
-                }
-                
-                older_speed = this.racer.speed;
-              }
-              
-              //console.log('calcuts_scale', type_calcuts, this.speed, count);
-              
-              if (frames === undefined){
-                frames = this.frames;
-              }
-              
-              switch(type_calcuts){
-                case 'up':
-                  scale = add_scale + (older_speed - 1 + (1 / frames * count)) * 0.1;
-                break;
-                case 'down':
-                  scale = add_scale + (older_speed + 1 - (1 / frames * count)) * 0.1;
-                break;
-                case 'qul':
-                  scale = add_scale + older_speed* 0.1;
-                break
-              }
-              
-              w = sizes.w * scale;
-              h = sizes.h * scale;
-              x = x_racer - w / 2;              
-              y = y_racer - h / 2;
-                            
-              return {
-                x: x,
-                y: y,
-                w: w,
-                h: h,
-              };
-            }
-          }()),  
           // calcuts_x_y from i, j
           calcuts_x_y: function(i, j){
+                              
             return {
                 x: i * road_params.cell + road_params.cell / 2,
                 y: j * road_params.cell + road_params.cell / 2,
               };
           },
           // goes move for racer
-          racer_rival_go: function(racer){
+          racer_go: function(racer){
           
             var s;
             var i = racer.coord.i;
@@ -1139,11 +1264,7 @@
             function set_goal(goal_i, goal_j){
               
               var xy = the.calcuts_x_y(goal_i, goal_j);
-              
-              if (racer.type == 'user'){
-                racer.steps.cycle = true;
-              }
-              
+              racer.steps.cycle = true;
               racer.steps.goal.i = goal_i;
               racer.steps.goal.j = goal_j;
               racer.steps.goal.x = xy.x;
@@ -1151,27 +1272,25 @@
             }
             // breack racer in i, j
             function boomb(racer_i, racer_j){
-              if (racer.type == 'user'){
-                racer.steps.cycle = false;              
-                racer.root = (function(road, i, j){
-                  if (road[i][j - 1] !== 0){
-                    return 4;
-                  } else if (road[i + 1] && road[i + 1][j] !== 0){
-                    return 6;
-                  } else if (road[i][j + 1] !== 0){
-                    return 0;
-                  } else if (road[i - 1] && road[i - 1][j] !== 0){
-                    return 2;
-                  } else {
-                    return 2;
-                  }
-                }(the.array, racer_i, racer_j));                
-                racer.speed = 0;
-              } 
 
-              the.set_racer_rival(racer, {i:racer_i, j:racer_j});
-            }
-            
+              racer.steps.cycle = false;              
+              racer.root = (function(road, i, j){
+                if (road[i][j - 1] !== 0){
+                  return 4;
+                } else if (road[i + 1] && road[i + 1][j] !== 0){
+                  return 6;
+                } else if (road[i][j + 1] !== 0){
+                  return 0;
+                } else if (road[i - 1] && road[i - 1][j] !== 0){
+                  return 2;
+                } else {
+                  return 2;
+                }
+              }(the.array, racer_i, racer_j));                
+              racer.speed = 0;
+
+              racer.set(racer_i, racer_j);
+            }            
           },
           // calcuts x, y for next frame rendering racer  
           steps_for_racer: function(){
@@ -1183,7 +1302,7 @@
             // start calcuts params for render if it is needs
             if (this.racer.steps.count == 0){
               if(this.racer.speed > 0){
-                this.racer_rival_go(this.racer);
+                this.racer_go(this.racer);
               } else {
                 if (this.racer.steps.cycle){
                   this.racer.steps.cycle = false;
@@ -1200,6 +1319,9 @@
                 i: this.racer.steps.goal.i,
                 j: this.racer.steps.goal.j,
                 time: this.timer, 
+                frames: this.frames,
+                start_i: this.racer.start.i,
+                start_j: this.racer.start.j,
               });              
             } else {
               if (this.racer.steps.count == 0){
@@ -1214,7 +1336,7 @@
                   if (this.racer.flay[this.racer.flay.length - 1].s === 0){
                     this.racer.flay[this.racer.flay.length - 1].wait++;
                   } else {
-                    this.racer.flay.push({s: 0, wait: 0});
+                    this.racer.flay.push({s: 0, wait: 0, i: this.racer.coord.i, j: this.racer.coord.j});
                   }
                 }
               }
@@ -1224,14 +1346,15 @@
             
             var xy;
             var ij;
+            var xy_2;
             
-            if (racer.steps.count < this.frames){
+            if (racer.steps.count < racer.frames){
               if (racer.steps.count == 0){
                 racer.steps.path = 'M' + racer.coord.x + ',' + racer.coord.y + 
                                         'L' + racer.steps.goal.x + ',' + racer.steps.goal.y;
-                racer.steps.bit = Raphael.getTotalLength(racer.steps.path) / this.frames;
+                racer.steps.bit = Raphael.getTotalLength(racer.steps.path) / racer.frames;
                 
-                racer.steps.begin_path = 'M' + racer.coord.x + ',' + racer.coord.y; 
+                racer.steps.begin_path = 'L' + racer.coord.x + ',' + racer.coord.y; 
                                                     
                 racer.renders.status = true;
                 racer.renders.path = '';
@@ -1242,7 +1365,9 @@
                                     racer.steps.count * racer.steps.bit);
               
               if (racer.type == 'user'){
-                racer.renders.viewBox = this.get_viewBox(xy.x, xy.y, racer.steps.count);
+                racer.renders.viewBox.x = xy.x;
+                racer.renders.viewBox.y = xy.y;
+                racer.renders.viewBox.count = racer.steps.count;
               } 
                              
               racer.renders.racer = xy;
@@ -1254,9 +1379,13 @@
               
               racer.coord.i = ij.i;
               racer.coord.j = ij.j;
-                
-              racer.renders.path = racer.steps.begin_path + 'L' + xy.x + ',' + xy.y;
-                          
+              if (racer.steps.count % 2 == 0){
+                racer.renders.path = 'M' + xy.x + ',' + xy.y + racer.steps.begin_path;
+              } else {
+                xy_2 = Raphael.getPointAtLength(racer.steps.path, 
+                                    Math.floor(racer.steps.count / 2) * racer.steps.bit);
+                racer.renders.path = 'M' + xy.x + ',' + xy.y + 'L' + xy_2.x + ',' + xy_2.y;
+              }
               racer.steps.count++;
             } else {
             // end move for racer
@@ -1268,18 +1397,19 @@
               racer.coord.x = racer.steps.goal.x;
               racer.coord.y = racer.steps.goal.y;
                             
-              this.set_racer_rival(racer, {i: racer.steps.goal.i, j: racer.steps.goal.j});
+              racer.set(racer.steps.goal.i, racer.steps.goal.j);
             }          
           },
           //draw freme for move racer
           renders_for_racer: function(){
+          
+            var rnds = this.racer.renders;
                         
-            this.racer.set_racer(this.racer.renders.racer.x, this.racer.renders.racer.y, this.racer.current_speed_root.r);
+            this.racer.set_racer(rnds.racer.x, rnds.racer.y, this.racer.current_speed_root.r);
                           
-            this.svg.setViewBox(this.racer.renders.viewBox.x, this.racer.renders.viewBox.y,
-                                   this.racer.renders.viewBox.w, this.racer.renders.viewBox.h);
+            this.racer.set_viewBox(rnds.viewBox.x, rnds.viewBox.y, rnds.viewBox.count);
                                    
-            this.racer.set_path('anim', this.racer.renders.path);                       
+            this.racer.set_path('anim', rnds.path);                       
           },
           steps_for_rival: (function(){                      
             // calcuts the go
@@ -1395,6 +1525,13 @@
             };
             
             return function(){ 
+
+              if (this.timer >= this.rival.time){
+                this.rival.renders.status = false;
+                this.wins = 'rival';
+                this.status = 'end';
+                return;
+              }
                                                   
               if (this.rival.flay.length > this.rival.steps.num + 1){
                 
@@ -1403,49 +1540,43 @@
                   this.rival.steps.wait++;
                   this.rival.renders.status = false;
                 } else {
-                                
-                  if (this.rival.steps.wait > 0){
-                    this.rival.steps.wait = 0;
-                  }
-                  
+                                                  
                   if (this.rival.steps.count == 0){
-                                    
-                    this.rival.root = this.rival.flay[this.rival.steps.num].r;
+                    
                     
                     if (check_render(this.rival.flay, this.rival.steps.num)){
-                                        
-                      this.rival.speed = this.rival.flay[this.rival.steps.num].s;
                       
-                      console.log(this.rival.flay[this.rival.steps.num + 1]);
+                      this.rival.root = this.rival.flay[this.rival.steps.num].r;
                       
+                      this.rival.speed = this.rival.flay[this.rival.steps.num + 1].s;
+                                            
                       set_goal(this.rival.steps.goal, this, this.rival.flay[this.rival.steps.num + 1]);
                        
                       this.set_renders_racer_rival(this.rival);
                     
                     } else {
-                    
+                                                                    
+                      this.rival.root = this.rival.flay[this.rival.steps.num + 1].r;
                       this.rival.speed = 0;
-                      this.set_racer_rival(this.rival, {
-                          i: this.rival.flay[this.rival.steps.num + 1].i,
-                          j: this.rival.flay[this.rival.steps.num + 1].j,
-                      });
+                      this.rival.set(this.rival.flay[this.rival.steps.num + 1].i ,
+                                        this.rival.flay[this.rival.steps.num + 1].j);
                     }
-                    
-                    this.rival.steps.num++;
-                  
+                                      
                   } else {
                     this.set_renders_racer_rival(this.rival);
                   }
+                  
+                  if (this.rival.steps.wait > 0 || this.rival.steps.count == 0){
+                    this.rival.steps.num++;
+                  }
+                  
+                  if (this.rival.steps.wait > 0){
+                    this.rival.steps.wait = 0;
+                  }
+                  
                 }
-              } else {              
-                if (this.timer >= this.rival.time){
-                  this.wins = 'rival';
-                  this.status = 'end';
-                  console.log('rivel will');
-                  return;
-                } else {
-                  this.set_renders_racer_rival(this.rival);
-                }
+              } else {
+                this.set_renders_racer_rival(this.rival);
               }
             };             
           }()),
@@ -1490,14 +1621,16 @@
         
         this.step = function(){
 
-          switch(this._gm_.status){
+          var gm = this._gm_;
+
+          switch(gm.status){
             case 'begin':
-              this._gm_.steps_start();
+              gm.steps_start();
             break;
             case 'main':
-              this._gm_.timer++;
-              this._gm_.steps_for_racer();
-              this._gm_.steps_for_rival();
+              gm.timer++;
+              gm.steps_for_racer();
+              gm.steps_for_rival();
                           
             break;
             case 'end':
@@ -1507,36 +1640,44 @@
         };
         
         this.render = function(){
-          switch(this._gm_.status){
+          
+          var gm = this._gm_; 
+          
+          switch(gm.status){
             case 'begin':
-              this._gm_.up.computation_start(100 * this._gm_.steps_up.count / this._gm_.steps_up.frames);
+              gm.up.computation_start(100 * gm.steps_up.count / gm.steps_up.frames);
             break;
             case 'main':
-              if (this._gm_.racer.renders.status){
-                this._gm_.renders_for_racer();
+              if (gm.racer.renders.status){
+                gm.renders_for_racer();
               }
               
-              if (this._gm_.rival.renders.status){
-                this._gm_.renders_for_rival();
+              if (gm.rival.renders.status){
+                gm.renders_for_rival();
               }
             break;
             case 'end':
-              this._gm_.up.show_finish(this._gm_.timer, this._gm_.wins); 
+              if (gm.up.rend_finish){
+                gm.up.show_finish(gm.timer, gm.wins);
+                gm.up.rend_finish = false;
+              }
             break;
           }          
         };
         
         this.keydown = function(data){
           
-          switch (this._gm_.status){
+          var gm = this._gm_;
+          
+          switch (gm.status){
             case 'begin':
-              this._gm_.steps_up.go = true;
+              gm.steps_up.go = true;
             break;
             case 'main':
-              game.key_down_for_racer(data)
+              gm.key_down_for_racer(data)
             break;
             case 'end':
-              this._gm_.restart();
+              gm.restart();
             break;
           }
         };
