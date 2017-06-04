@@ -141,17 +141,17 @@
                   ];
                 }              
               }
-              //paper.path('M' + one_line[0].x + ',' + one_line[0].y + 'L' + one_line[1].x + ',' + one_line[1].y + 
-                      //'L' + one_line[2].x + ',' + one_line[2].y + 'L' + one_line[3].x + ',' + one_line[3].y  + 'Z').attr('fill', '#000');
+              paper.path('M' + one_line[0].x + ',' + one_line[0].y + 'L' + one_line[1].x + ',' + one_line[1].y + 
+                      'L' + one_line[2].x + ',' + one_line[2].y + 'L' + one_line[3].x + ',' + one_line[3].y  + 'Z').attr('fill', '#000');
 
-              //paper.circle(one_line[0].x, one_line[0].y, 10).attr('fill', '#FFF');
-              //paper.circle(one_line[1].x, one_line[1].y, 10).attr('fill', '#999');
-              //paper.circle(one_line[2].x, one_line[2].y, 10).attr('fill', '#555');
-              //paper.circle(one_line[3].x, one_line[3].y, 10).attr('fill', '#8F0');  
+              paper.circle(one_line[0].x, one_line[0].y, 10).attr('fill', '#FFF');
+              paper.circle(one_line[1].x, one_line[1].y, 10).attr('fill', '#999');
+              paper.circle(one_line[2].x, one_line[2].y, 10).attr('fill', '#555');
+              paper.circle(one_line[3].x, one_line[3].y, 10).attr('fill', '#8F0');  
               
               
-              //paper.circle(points[i][0].x, points[i][0].y, 10).attr('fill', '#8FF');
-              //paper.circle(points[i][1].x, points[i][1].y, 10).attr('fill', '#8FF');
+              paper.circle(points[i][0].x, points[i][0].y, 10).attr('fill', '#8FF');
+              paper.circle(points[i][1].x, points[i][1].y, 10).attr('fill', '#8FF');
                           
               //console.log(one_line);
               
@@ -198,12 +198,21 @@
           
           for (n = 0; n < array.length; n++){
             for (m = 0; m < array.length[n]; m++){
+              
               for(j = 0; j < array_lines.length; j++){
+              
+              
+              
                 chek_cell = (((array_lines[j][0].i < n * size && array_lines[j][1].i > (n + 1) * size) ||
+              
                 (array_lines[j][3] < n * size && array_lines[j][2].i > (n + 1) * size)) && 
+              
                 ((array_lines[j][0].y < m * cell && array_lines[j][3].y > (m + 1) * size) ||
-                (array_lines[j][1].y < m * cell && array_lines[j][1].y > (m + 1) * size)));
+              
+                (array_lines[j][1].y < m * cell && array_lines[j][2].y > (m + 1) * size)));
                 
+              
+              
                 if (check_cell){
                   array[n][m] = 1;
                   break;
@@ -211,6 +220,23 @@
                   array[n][m] = 0;
                 }
               }              
+            }
+          }
+          
+          var half = Math.floor(params.radius / 2 - 2);
+
+          exit:
+          
+          for (m = 0; m < array[half].length; m++){
+            if (array[half][m] == 0){
+              for (n = m; n < array[half].length; n++){      
+                if (array[half][n] == 1){
+                  break exit;
+                } else {
+                  console.log(array[half][n]);
+                  array[half][n] = 2;
+                }
+              }
             }
           }
           
@@ -247,7 +273,9 @@
             }
           }
           
-          for (j = point_up.j; j <= array[point_up.i].length; j++){
+          console.log(point_up);
+          
+          for (j = point_up.j; j < array[point_up.i].length; j++){
             if (array[point_up.i][j] == 1){
               point_down = {i: point_up.i, j: j - 1};
               break;
