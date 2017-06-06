@@ -23,34 +23,33 @@
         var app = this.app;
         var paper = app._svg_;
         var sizes = app._sizes_;
-        
-        
         var road = {
-          finish: 35, 
+          finish: 350, 
+          width_finish: 0.01,
           fill: '59-#536-#000',
           array: [
-          {x: 20, y: 25, b: 8},
-          {x: 60, y: 25, b: 15},
-          {x: 70, y: 70, b: 10},
-          {x: 20, y: 90, b: 10},
-          {x: 20, y: 10, b: 10},
+          
+          {x: 600, y: 250, b: 150},
+          {x: 700, y: 700, b: 100},
+          {x: 200, y: 900, b: 100},
+          {x: 200, y: 100, b: 100},
           ],
         };
         
-        var road_params = {
+        var road_params = { 
           cell: 10,
-          radius: 100,
+          radius: 1000,
+          indent_finish: 10,
           size: 0,
           body: '#222',
-          attr_road: {'stroke': '#000', 'stroke-width': 1, 'fill': road.fill},
-          attr_border: {'stroke': '#444', 'stroke-width': 10},
-          attr_finish: {'stroke': '#FF3', 'stroke-width': 10, 'stroke-linecap': 'round'},
+          attr_road: {'stroke': '#000', 'stroke-width': 10, 'fill': road.fill},
+          attr_border: {'stroke': '#444', 'stroke-width': 100, 'stroke-linejoin': 'round'},
+          attr_finish: {'stroke': '#DD3', 'stroke-width': 15, 'stroke-linecap': 'round'},
           get_size: function(){
             this.size = this.cell * this.radius;
           },
           free_view: false,
         };   
-        
         
         road_params.get_size();
         
@@ -158,18 +157,7 @@
                   ];
                 }              
               }
-              
-              //paper.circle(one_line[0].x, one_line[0].y, 10).attr('fill', '#FFF');
-              //paper.circle(one_line[1].x, one_line[1].y, 10).attr('fill', '#999');
-              //paper.circle(one_line[2].x, one_line[2].y, 10).attr('fill', '#555');
-              //paper.circle(one_line[3].x, one_line[3].y, 10).attr('fill', '#8F0');  
-              
-              
-              //paper.circle(points[i][0].x, points[i][0].y, 10).attr('fill', '#8FF');
-              //paper.circle(points[i][1].x, points[i][1].y, 10).attr('fill', '#8FF');
-                          
-              //console.log(one_line);
-              
+                            
               ls.push(one_line);
               
             }
@@ -284,14 +272,7 @@
             }
           }
              
-          try {
-            
-            set_finish(finish);
-          
-          } catch (ex) {
-            
-            console.log(ex);
-          }
+          set_finish(finish);
           
           return array;
           
@@ -377,22 +358,34 @@
           
           function set_finish(w){
             
+            var width = prms.indent_finish;
+            
             var m, n;
-                                              
+            
+            var count = 0;
+            
             exit:
             
             for (m = 0; m < array[w].length; m++){
               if (array[w][m] == 0){
                 for (n = m; n < array[w].length; n++){      
                   if (array[w][n] == 1){
-                    break exit;
+                    
+                    if (width > count){
+                      count++;
+                      w++;
+                      m = 0;
+                      continue exit;
+                    } else {
+                      break exit;                    
+                    }
+                    
                   } else {
                     array[w][n] = 2;
                   }
                 }
               }
-            }
-                        
+            }                        
           }
                               
         }(rects, road_params, road.finish));
@@ -405,7 +398,7 @@
           var point_up, point_down;
           var finish;
           var return_field;
-          var scale = 1;
+          var scale = 20;
           
           var path = '';
           
@@ -434,6 +427,9 @@
           
           finish = 'M' + ((point_up.i + 0.5) * cell) + ',' + (point_up.j * cell) +
                     'L' +  ((point_down.i + 0.5) * cell) + ',' + ((point_down.j + 1) * cell);  
+          
+          point_up.i += p.indent_finish * 2;
+          point_down.i += p.indent_finish * 2;
           
           for(i = 0; i < lines.length; i++){
             path += 'M' + lines[i][0].x + ',' + lines[i][0].y + 'L' + lines[i][1].x + ',' + lines[i][1].y + 
@@ -478,21 +474,20 @@
               color: this.fire
             };  
             
-            var glow = {  
-              width: this.cell,
-              fill: false,
-              opacity: 0.1,
-              offsetx: 0,
-              offsety: 0,
-              color: this.fire,
+            var glow = {
+              'stroke': this.fire,
+              'stroke-width': this.cell,
+              'stroke-linecap': 'butt',
+              'stroke-linejoin': 'round',
+              'opacity': 0.05,  
             };
             
             var s = this.cell;
             
-            this.path.el = paper.path(this.path.str).glow(glow);
+            this.path.el = paper.path(this.path.str).attr(glow);
                   
             this.path_anim = {
-              glow: paper.path("").glow(glow),
+              glow: paper.path("").attr(glow),
               fire: paper.path("").glow(fire), 
             };
 
@@ -517,22 +512,22 @@
                 switch(num){
                   case '05':
                     if (add){
-                      return xy + 0.6 * road_params.cell;
+                      return xy + 1 * road_params.cell;
                     } else {
-                      return xy -(0.6 * road_params.cell);
+                      return xy -(1 * road_params.cell);
                     }
                   break;
                   case '025':
                     if (add) {
-                      return xy + 0.3 * road_params.cell;
+                      return xy + 0.5 * road_params.cell;
                     } else {
-                      return xy -(0.3 * road_params.cell);
+                      return xy -(0.5 * road_params.cell);
                     }
                 }
             };
             
-            var indent_x = 0.2;
-            var indent_y = 0.2;
+            var indent_x = 0.3;
+            var indent_y = 0.3;
             
             var get_indent = function(count){
               
@@ -630,11 +625,15 @@
             };
                                 
             return function(x, y, root){
-                        
-              xy = get_indent(this.steps.count);
-            
-              x += xy.x;
-              y += xy.y;
+              
+              if (this.speed < 5){
+                          
+                xy = get_indent(this.steps.count);
+              
+                x += xy.x;
+                y += xy.y;
+                
+              }
                 
               path = get_path(x, y, root);
 
@@ -647,6 +646,7 @@
               y: j * this.cell + this.cell / 2,
             }
           },
+
           set: (function(){
             
             var xy;
@@ -678,7 +678,7 @@
           }()),
         };
                 
-        var CreateRacer = function(i, j, user, fire, fill){
+        var CreateRacer = function(i, j, user, fire, fill, steps_rival){
         
           var xy;
 
@@ -740,7 +740,7 @@
               var older_level = 0;
               var type_calcuts = 'qul';
               var scale;
-              var add_scale = 0.2;
+              var add_scale = 0.5;
               var frames = proto_racers.frames;
               var svg = paper;
               var s = sizes;
@@ -1012,7 +1012,7 @@
               }
             },
           },
-          rival: null,
+          rival: [],
           wins: '',
           steps_up: steps_popup,
           up: popup,
@@ -1025,23 +1025,31 @@
             this.up.rend_finish = true;
             this.timer = 0;
             this.racer_keypress.clear_all();  
-            //console.log('[');
-            //for (var i in this.racer.flay){
-              //console.log(' {');
-              //for (var prop in this.racer.flay[i]){
-                //console.log("  '" + prop + "'" + ': ' + this.racer.flay[i][prop] + ',');
-              //}
-              //console.log(' },');
-            //}
-            //console.log(']');
+
+            log_trace.call(this);
             
             this.racer.del();
-            this.rival.del();
             
-            this.rival = null;
+            this.rival.forEach(function(rival){
+              rival.del();
+            });
+            
+            this.rival = [];
             this.racer = null;
             
             this.start_game();
+            
+            function log_trace(){
+              console.log('[');
+              for (var i in this.racer.flay){
+                console.log(' {');
+                for (var prop in this.racer.flay[i]){
+                  console.log("  '" + prop + "'" + ': ' + this.racer.flay[i][prop] + ',');
+                }
+                console.log(' },');
+              }
+              console.log(']');              
+            }
           },
           steps_start: function(){
             
@@ -1078,7 +1086,11 @@
                                                                                 this.field.finish.point_up.j),
             };
                                     
-            this.rival = new CreateRacer(steps_rival.start.i, steps_rival.start.j, false, '#AAF', "#44D");                                                    
+            this.rival.push(new CreateRacer(steps_rival.start.i, steps_rival.start.j, 
+                      false, '#AAF', "#44D", steps_rival));
+                      
+            this.rival.push(new CreateRacer(steps_rival_2.start.i, steps_rival_2.start.j, 
+                      false, '#AFA', "#4D4", steps_rival_2));                                                              
                                           
             this.racer = new CreateRacer(ij.i, ij.j, true, '#FF6', "#D44");                                                    
                         
@@ -1089,49 +1101,25 @@
               j: Math.floor(y / this.params.cell),
             };
           },
-          check_finish_racer: (function(){
-            
-            var timeout;
-            
-            var ink_timeout = function(the, type){
+          check_finish_racer: function(){
+                          
+            if (this.racer.current_speed_root.r > 0 && this.racer.current_speed_root.r < 4){
                             
-              if (type){
-                the.racer.finish_on++;
-              } else {
-                the.racer.finish_on--;
-              }               
-                            
-              window.clearTimeout(timeout);
-              timeout = undefined;
-              
-            };
-            
-            return function(){
-                            
-              if (this.racer.root > 0 && this.racer.root < 4){
-                if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
-                  if (this.racer.finish_on > 0){
-                    if (timeout === undefined){
-                      timeout = window.setTimeout(ink_timeout, 1000, this, false);
-                    }
-                  } else {
-                    this.racer.renders.status = false;
-                    this.racer.steps.cycle.status = false;
-                    this.wins = 'user';
-                    this.status = 'end';
-                    this.racer.speed = 0;
-                  }
-                }    
-              } else {
-                if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
-                  if (timeout === undefined){
-                    timeout = window.setTimeout(ink_timeout, 1000, this, true);
-                  }
+              if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
+                if (this.racer.finish_on == 0){                    
+                  this.racer.renders.status = false;
+                  this.racer.steps.cycle.status = false;
+                  this.wins = 'user';
+                  this.status = 'end';
+                  this.racer.speed = 0;
                 }
+              }    
+            } else {
+              if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
+                this.racer.finish_on++;
               }
-            };
-            
-          }()),  
+            }
+          },
           // calcuts_x_y from i, j
           calcuts_x_y: function(i, j){
                               
@@ -1305,8 +1293,6 @@
             if (this.racer.steps.count == 0){
               
               this.key_check_for_racer();
-              
-              
               
               if(this.racer.speed > 0){
                 this.racer_go(this.racer);
@@ -1540,70 +1526,83 @@
               goal.y = xy.y;            
             };
             
-            return function(){ 
+            var rend_for_rival = function(rival){ 
 
-              if (this.timer >= this.rival.time){
-                this.rival.renders.status = false;
+              if (this.timer >= rival.time){
+                rival.renders.status = false;
                 this.wins = 'rival';
                 this.status = 'end';
                 return;
               }
                                                   
-              if (this.rival.flay.length > this.rival.steps.num + 1){
+              if (rival.flay.length > rival.steps.num + 1){
                 
-                if (this.rival.flay[this.rival.steps.num].s === 0 && 
-                        this.rival.flay[this.rival.steps.num].wait > this.rival.steps.wait){
-                  this.rival.steps.wait++;
-                  this.rival.renders.status = false;
+                if (rival.flay[rival.steps.num].s === 0 && 
+                        rival.flay[rival.steps.num].wait > rival.steps.wait){
+                  rival.steps.wait++;
+                  rival.renders.status = false;
                 } else {
                                                   
-                  if (this.rival.steps.count == 0){
+                  if (rival.steps.count == 0){
                     
                     
-                    if (check_render(this.rival.flay, this.rival.steps.num)){
+                    if (check_render(rival.flay, rival.steps.num)){
                       
-                      this.rival.root = this.rival.flay[this.rival.steps.num].r;
+                      rival.root = rival.flay[rival.steps.num].r;
                       
-                      this.rival.speed = this.rival.flay[this.rival.steps.num + 1].s;
+                      rival.speed = rival.flay[rival.steps.num + 1].s;
                                             
-                      set_goal(this.rival.steps.goal, this, this.rival.flay[this.rival.steps.num + 1]);
+                      set_goal(rival.steps.goal, this, rival.flay[rival.steps.num + 1]);
                        
-                      this.set_renders_racer_rival(this.rival);
+                      this.set_renders_racer_rival(rival);
                     
                     } else {
                                                                     
-                      this.rival.root = this.rival.flay[this.rival.steps.num + 1].r;
-                      this.rival.speed = 0;
-                      this.rival.set(this.rival.flay[this.rival.steps.num + 1].i ,
-                                        this.rival.flay[this.rival.steps.num + 1].j);
+                      rival.root = rival.flay[rival.steps.num + 1].r;
+                      rival.speed = 0;
+                      rival.set(rival.flay[rival.steps.num + 1].i ,
+                                        rival.flay[rival.steps.num + 1].j);
                     }
                                       
                   } else {
-                    this.set_renders_racer_rival(this.rival);
+                    this.set_renders_racer_rival(rival);
                   }
                   
-                  if (this.rival.steps.wait > 0 || this.rival.steps.count == 0){
-                    this.rival.steps.num++;
+                  if (rival.steps.wait > 0 || rival.steps.count == 0){
+                    rival.steps.num++;
                   }
                   
-                  if (this.rival.steps.wait > 0){
-                    this.rival.steps.wait = 0;
+                  if (rival.steps.wait > 0){
+                    rival.steps.wait = 0;
                   }
                   
                 }
               } else {
-                this.set_renders_racer_rival(this.rival);
+                this.set_renders_racer_rival(rival);
               }
-            };             
+            };
+            
+            return function(){
+            
+              var i, len;
+              
+              len = this.rival.length;
+            
+              for (var i = 0; i < len; i++){
+                rend_for_rival.call(this, this.rival[i]);
+              }
+            };
           }()),
-          renders_for_rival: function(){                                    
-            this.rival.set_racer(this.rival.renders.racer.x, this.rival.renders.racer.y, this.rival.root);                                                             
-            this.rival.set_path('anim', this.rival.renders.path, this.rival.renders.fire);                       
+          renders_for_rival: function(rival){
+                    
+            rival.set_racer(rival.renders.racer.x, rival.renders.racer.y, rival.root);                   
+            rival.set_path('anim', rival.renders.path, rival.renders.fire); 
+                                  
           },
           key_check_for_racer: function(){
             
             if (this.racer_keypress.up){
-              if (this.racer.speed < 20 && this.racer.current_speed_root.s >= this.racer.speed){
+              if (this.racer.speed < 50 && this.racer.current_speed_root.s >= this.racer.speed){
                 this.racer.speed++;
               }
             }
@@ -1653,7 +1652,7 @@
             break;
             case 'main':
               gm.timer++;
-              gm.steps_for_racer();
+              //gm.steps_for_racer();
               //gm.steps_for_rival();
                           
             break;
@@ -1666,6 +1665,7 @@
         this.render = function(){
           
           var gm = this._gm_; 
+          var i, len;
           
           switch(gm.status){
             case 'begin':
@@ -1676,8 +1676,12 @@
                 gm.renders_for_racer();
               }
               
-              if (gm.rival.renders.status){
-                gm.renders_for_rival();
+              len = gm.rival.length;
+              
+              for(i = 0; i < len; i++){
+                if (gm.rival[i].renders.status){
+                  gm.renders_for_rival(gm.rival[i]);
+                }
               }
             break;
             case 'end':
