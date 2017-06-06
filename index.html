@@ -26,7 +26,7 @@
         var road = {
           finish: 350, 
           width_finish: 0.01,
-          fill: '34-#203-#114',
+          fill: '34-#203-#002',
           array: [
           {x: 200, y: 100,  b: 50},
           {x: 250, y: 200, b: 100},
@@ -64,7 +64,7 @@
           get_size: function(){
             this.size = this.cell * this.radius;
           },
-          free_view: true,
+          free_view: false,
         };   
         
         road_params.get_size();
@@ -480,19 +480,18 @@
           },
           // create elements for racer
           create: function(){
-            
+                        
             var fire = {
-              width: this.cell * 2,
-              fill: false,
-              opacity: 1,
-              offsetx: 0,
-              offsety: 0,
-              color: this.fire
-            };  
+              'stroke': this.fire,
+              'stroke-width': this.cell * 1.2,
+              'stroke-linecap': 'round',
+              'opacity': 0.5,  
+            };
+            
             
             var glow = {
               'stroke': this.fire,
-              'stroke-width': this.cell,
+              'stroke-width': this.cell * 0.8,
               'stroke-linecap': 'butt',
               'stroke-linejoin': 'round',
               'opacity': 0.05,  
@@ -504,7 +503,7 @@
                   
             this.path_anim = {
               glow: paper.path("").attr(glow),
-              fire: paper.path("").glow(fire), 
+              fire: paper.path("").attr(fire), 
             };
 
             this.point = paper.path('').attr({'fill': this.fill, 'stroke-width': 1, 'stroke': '#000'});
@@ -528,9 +527,9 @@
                 switch(num){
                   case '05':
                     if (add){
-                      return xy + 1 * road_params.cell;
+                      return xy + 1.4 * road_params.cell;
                     } else {
-                      return xy -(1 * road_params.cell);
+                      return xy - (1.4 * road_params.cell);
                     }
                   break;
                   case '025':
@@ -1106,8 +1105,8 @@
                       false, '#AAF', "#44D", steps_rival));
                       
             this.rival.push(new CreateRacer(steps_rival_2.start.i, steps_rival_2.start.j, 
-                      false, '#AFA', "#4D4", steps_rival_2));                                                              
-                                          
+                      false, '#AFA', "#4D4", steps_rival_2));
+                      
             this.racer = new CreateRacer(ij.i, ij.j, true, '#FF6', "#D44");                                                    
                         
           },
@@ -1122,17 +1121,15 @@
             if (this.racer.current_speed_root.r > 0 && this.racer.current_speed_root.r < 4){
                             
               if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
-                if (this.racer.finish_on == 0){                    
-                  this.racer.renders.status = false;
-                  this.racer.steps.cycle.status = false;
-                  this.wins = 'user';
-                  this.status = 'end';
-                  this.racer.speed = 0;
-                }
+                this.racer.renders.status = false;
+                this.racer.steps.cycle.status = false;
+                this.wins = 'user';
+                this.status = 'end';
+                this.racer.speed = 0;
               }    
             } else {
               if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
-                this.racer.finish_on++;
+                this.restart();
               }
             }
           },
@@ -1668,8 +1665,8 @@
             break;
             case 'main':
               gm.timer++;
-              //gm.steps_for_racer();
-              //gm.steps_for_rival();
+              gm.steps_for_racer();
+              gm.steps_for_rival();
                           
             break;
             case 'end':
