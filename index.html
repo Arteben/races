@@ -21,27 +21,36 @@
       create: function(){
 
         var app = this.app;
-        var paper = app._svg_;10050
+        var paper = app._svg_;
         var sizes = app._sizes_;
+        
+        
+        var road = {
+          finish: 35, 
+          fill: '59-#536-#000',
+          array: [
+          {x: 20, y: 25, b: 8},
+          {x: 60, y: 25, b: 15},
+          {x: 70, y: 70, b: 10},
+          {x: 20, y: 90, b: 10},
+          {x: 20, y: 10, b: 10},
+          ],
+        };
         
         var road_params = {
           cell: 10,
-          radius: 1000,
+          radius: 100,
           size: 0,
-          attr_road: {'stroke': '#556', 'stroke-width': 15, 'fill': '#DDF'},
-          attr_island: {'stroke': '#556', 'stroke-width': 15, 'fill': "#484"},
-          attr_finish: {'stroke': '#BB3', 'stroke-width': 10},
+          body: '#222',
+          attr_road: {'stroke': '#000', 'stroke-width': 1, 'fill': road.fill},
+          attr_border: {'stroke': '#444', 'stroke-width': 10},
+          attr_finish: {'stroke': '#FF3', 'stroke-width': 10, 'stroke-linecap': 'round'},
           get_size: function(){
             this.size = this.cell * this.radius;
           },
+          free_view: false,
         };   
         
-        var road = [
-          {x: 200, y: 250, b: 150},
-          {x: 600, y: 50, b: 180},
-          {x: 700, y: 400, b: 200},
-          {x: 300, y: 900, b: 250},
-        ];
         
         road_params.get_size();
         
@@ -49,43 +58,15 @@
         
         var speed = 50;
         
-        document.body.style.backgroundColor = road_params.attr_island.fill;
+        document.body.style.backgroundColor = road_params.body;
         
-        // create array for road
-        var road_array = (function(array, size){
-                    
-          var n, m;
-          var check_cell;
+        var rects = (function(array, size){
+        
+          var arr_lines = get_array_lines();
           
-          var array_lines = (function(){
-            
-            var i, j;
-            var point_1, point_2;
-            
-            var ar = [];
-                                    
-            for(i = 0; i < array.length; i++){
-              if (i + 1 < array.length){
-                if (array[i].x < array[i + 1].x){
-                  ar.push([{x: array[i].x, y: array[i].y}, {x: array[i+1].x, y: array[i+1].y}, array[i].b]);
-                } else {
-                  ar.push([{x: array[i + 1].x, y: array[i + 1].y}, {x: array[i].x, y: array[i].y}, array[i].b]);
-                }
-              } else {
-                if (array[i].x < array[0].x){
-                  ar.push([{x: array[i].x, y: array[i].y}, {x: array[0].x, y: array[0].y}, array[i].b]);
-                } else {
-                  ar.push([{x: array[0].x, y: array[0].y}, {x: array[i].x, y: array[i].y}, array[i].b]);
-                }
-              }
-            }
-            
-            return ar; 
-              
-          }());
+          return get_lines(arr_lines);
           
-          // one line - four points also borders, less x begin          
-          lines = (function(points){
+          function get_lines(points){
             
             var ls = [];
             
@@ -98,6 +79,42 @@
             var one_line;
             
             for(i = 0; i < points.length; i++){
+            
+              if (points[i][0].x == points[i][1].x){
+                if (points[i][0].y > points[i][1].y){
+                  
+                  one_line = [
+                    {x: points[i][1].x - points[i][2], y: points[i][1].y - points[i][2]},
+                    {x: points[i][1].x + points[i][2], y: points[i][1].y - points[i][2]},
+                    {x: points[i][0].x + points[i][2], y: points[i][0].y + points[i][2]},                    
+                    {x: points[i][0].x - points[i][2], y: points[i][0].y + points[i][2]},
+                  ];
+
+                } else {
+                  
+                  one_line = [
+                    {x: points[i][0].x - points[i][2], y: points[i][0].y - points[i][2]},
+                    {x: points[i][0].x + points[i][2], y: points[i][0].y - points[i][2]},
+                    {x: points[i][1].x + points[i][2], y: points[i][1].y + points[i][2]},                    
+                    {x: points[i][1].x - points[i][2], y: points[i][1].y + points[i][2]},
+                  ];
+                }
+                
+                ls.push(one_line);
+                continue;
+                
+              } else if (points[i][0].y == points[i][1].y){
+                  
+                  one_line = [
+                    {x: points[i][0].x - points[i][2], y: points[i][0].y - points[i][2]},
+                    {x: points[i][1].x + points[i][2], y: points[i][1].y - points[i][2]},
+                    {x: points[i][1].x + points[i][2], y: points[i][1].y + points[i][2]},                    
+                    {x: points[i][0].x - points[i][2], y: points[i][0].y + points[i][2]},
+                  ];
+                        
+                ls.push(one_line);
+                continue;                
+              }
             
               arg = get_arg(i);
               
@@ -141,23 +158,23 @@
                   ];
                 }              
               }
-              paper.path('M' + one_line[0].x + ',' + one_line[0].y + 'L' + one_line[1].x + ',' + one_line[1].y + 
-                      'L' + one_line[2].x + ',' + one_line[2].y + 'L' + one_line[3].x + ',' + one_line[3].y  + 'Z').attr('fill', '#000');
-
-              paper.circle(one_line[0].x, one_line[0].y, 10).attr('fill', '#FFF');
-              paper.circle(one_line[1].x, one_line[1].y, 10).attr('fill', '#999');
-              paper.circle(one_line[2].x, one_line[2].y, 10).attr('fill', '#555');
-              paper.circle(one_line[3].x, one_line[3].y, 10).attr('fill', '#8F0');  
+              
+              //paper.circle(one_line[0].x, one_line[0].y, 10).attr('fill', '#FFF');
+              //paper.circle(one_line[1].x, one_line[1].y, 10).attr('fill', '#999');
+              //paper.circle(one_line[2].x, one_line[2].y, 10).attr('fill', '#555');
+              //paper.circle(one_line[3].x, one_line[3].y, 10).attr('fill', '#8F0');  
               
               
-              paper.circle(points[i][0].x, points[i][0].y, 10).attr('fill', '#8FF');
-              paper.circle(points[i][1].x, points[i][1].y, 10).attr('fill', '#8FF');
+              //paper.circle(points[i][0].x, points[i][0].y, 10).attr('fill', '#8FF');
+              //paper.circle(points[i][1].x, points[i][1].y, 10).attr('fill', '#8FF');
                           
               //console.log(one_line);
               
               ls.push(one_line);
               
             }
+
+            return ls;
 
             function get_arg(num){
               
@@ -194,87 +211,220 @@
               
               return inds;
             }      
-          }(array_lines));
+          }
           
-          for (n = 0; n < array.length; n++){
-            for (m = 0; m < array.length[n]; m++){
-              
-              for(j = 0; j < array_lines.length; j++){
-              
-              
-              
-                chek_cell = (((array_lines[j][0].i < n * size && array_lines[j][1].i > (n + 1) * size) ||
-              
-                (array_lines[j][3] < n * size && array_lines[j][2].i > (n + 1) * size)) && 
-              
-                ((array_lines[j][0].y < m * cell && array_lines[j][3].y > (m + 1) * size) ||
-              
-                (array_lines[j][1].y < m * cell && array_lines[j][2].y > (m + 1) * size)));
-                
-              
-              
-                if (check_cell){
-                  array[n][m] = 1;
-                  break;
+          function get_array_lines(){
+
+            var i, j;
+            var point_1, point_2;
+            
+            var ar = [];
+                                    
+            for(i = 0; i < array.length; i++){
+              if (i + 1 < array.length){
+                if (array[i].x < array[i + 1].x){
+                  ar.push([{x: get_size(array[i].x), y: get_size(array[i].y)},
+                         {x: get_size(array[i+1].x), y: get_size(array[i+1].y)}, get_size(array[i].b, true)]);
                 } else {
-                  array[n][m] = 0;
+                  ar.push([{x: get_size(array[i + 1].x), y: get_size(array[i + 1].y)},
+                     {x: get_size(array[i].x), y: get_size(array[i].y)}, get_size(array[i].b, true)]);
+                }
+              } else {
+                if (array[i].x < array[0].x){
+                  ar.push([{x: get_size(array[i].x), y: get_size(array[i].y)}, 
+                    {x: get_size(array[0].x), y: get_size(array[0].y)}, get_size(array[i].b, true)]);
+                } else {
+                  ar.push([{x: get_size(array[0].x), y: get_size(array[0].y)},
+                         {x: get_size(array[i].x), y: get_size(array[i].y)}, get_size(array[i].b, true)]);
+                }
+              }
+            }
+            
+            return ar;
+          }
+
+          function get_size(val, simple){
+            if (simple){
+              return val * size;
+            } else {
+              return val * size + size * 0.5;
+            }
+          }
+       
+        }(road.array, road_params.cell));
+        
+        // create array for road
+        var road_array = (function(lines, prms, finish){
+                                    
+          var i, j, num;
+          var check_rect;
+          
+          var array = [];
+
+          for (i = 0; i < prms.radius; i++){
+            array[i] = [];
+            for (j = 0; j < prms.radius; j++){
+              
+              array[i][j] = 1;  
+                            
+              for (num = 0; num < lines.length; num++){
+                
+                
+                check_rect = (lines[num][0].x < get_point(i) && lines[num][2].x > get_point(i)) &&
+                              (lines[num][1].y < get_point(j) && lines[num][3].y > get_point(j));
+                              
+                if (check_rect){
+                
+                  if (check_point({x: get_point(i), y: get_point(j)}, lines[num])){
+                    array[i][j] = 0;
+                    break;
+                  }
                 }
               }              
             }
           }
+             
+          try {
+            
+            set_finish(finish);
           
-          var half = Math.floor(params.radius / 2 - 2);
-
-          exit:
-          
-          for (m = 0; m < array[half].length; m++){
-            if (array[half][m] == 0){
-              for (n = m; n < array[half].length; n++){      
-                if (array[half][n] == 1){
-                  break exit;
-                } else {
-                  console.log(array[half][n]);
-                  array[half][n] = 2;
-                }
-              }
-            }
+          } catch (ex) {
+            
+            console.log(ex);
           }
           
           return array;
+          
+          function check_point(point, rect){
+            
+            var xy_point;
+            var xy_rect;
+            var len;
+            
+            var count;
+            
+            for (count = 0; count < 4; count++){
+              
+              switch(count){
+                case 0:
+                
+                  xy_rect = {
+                    x: rect[1].x - rect[0].x,
+                    y: rect[0].y - rect[1].y, 
+                  };
+                  
+                  xy_point = {
+                    x: point.x - rect[0].x,
+                    y: point.y - rect[1].y,
+                  };
+                  
+                break;
+                case 1:
+                
+                  xy_rect = {
+                    x: rect[2].x - rect[1].x,
+                    y: rect[2].y - rect[1].y, 
+                  };
+                  
+                  xy_point = {
+                    x: rect[2].x - point.x,
+                    y: point.y - rect[1].y,
+                  };
+                  
+                break;
+                case 2:
+                
+                  xy_rect = {
+                    x: rect[2].x - rect[3].x,
+                    y: rect[3].y - rect[2].y, 
+                  };
+                  
+                  xy_point = {
+                    x: rect[2].x - point.x,
+                    y: rect[3].y - point.y,
+                  };
+                  
+                break;
+                case 3:
+                
+                  xy_rect = {
+                    x: rect[3].x - rect[0].x,
+                    y: rect[3].y - rect[0].y, 
+                  };
+                  
+                  xy_point = {
+                    x: point.x - rect[0].x,
+                    y: rect[3].y - point.y,
+                  };
+                  
+                break;
+              }
+              
+              len = (xy_rect.x / xy_rect.y) * xy_point.y; 
+                
+              if (xy_rect.x > (xy_point.x + len)){
+                return false;
+              }
+              
+            }
+            
+            return true;
+          }
+          
+          function get_point(val){
+            return prms.cell * val + 0.5 * prms.cell;
+          }
+          
+          function set_finish(w){
+            
+            var m, n;
+                                              
+            exit:
+            
+            for (m = 0; m < array[w].length; m++){
+              if (array[w][m] == 0){
+                for (n = m; n < array[w].length; n++){      
+                  if (array[w][n] == 1){
+                    break exit;
+                  } else {
+                    array[w][n] = 2;
+                  }
+                }
+              }
+            }
+                        
+          }
                               
-        }(road,road_params.cell));
+        }(rects, road_params, road.finish));
                 
         // draw road for road array        
-        var field = (function(array, p, svg){
+        var field = (function(lines, array, p, svg){
           
-          var path;
-          var road;
-          var island;
-          var i, j, m, n;
-          var cycle_points;
-          var stright;
+          var i, j;
           var cell = p.cell;
-          var half = Math.floor(p.radius / 2 - 2);
-          // begin root, on clock
-          var root;
-          var count;
-          var cycle;
           var point_up, point_down;
           var finish;
           var return_field;
+          var scale = 1;
+          
+          var path = '';
+          
+          if (p.free_view){
+            svg.setViewBox(0, 0, sizes.w * scale, sizes.h * scale);
+          }
           
           exit:
+          
           for (i = 0; i < array.length; i++){
-            for (j = 0; j< array[i].length; j++){
+            for (j = 0; j < array[i].length; j++){
+                        
               if (array[i][j] == 2){
                 point_up = {i: i, j: j};
                 break exit; 
               }
             }
           }
-          
-          console.log(point_up);
-          
+                    
           for (j = point_up.j; j < array[point_up.i].length; j++){
             if (array[point_up.i][j] == 1){
               point_down = {i: point_up.i, j: j - 1};
@@ -285,223 +435,14 @@
           finish = 'M' + ((point_up.i + 0.5) * cell) + ',' + (point_up.j * cell) +
                     'L' +  ((point_down.i + 0.5) * cell) + ',' + ((point_down.j + 1) * cell);  
           
-          root = 2;
-          path = '';
-          
-          cycle_points = {
-            i: point_up.i,
-            j: point_up.j,
-          };
-          
-          count = 0;
-          cycle = 'up';
-
-          // draw_border          
-          draw_and_check_root = function(){
-            
-            if (count != 0 && array[cycle_points.i][cycle_points.j] == 2){
-              path+= 'Z';
-
-              if (cycle == 'up'){
-                cycle_points = {
-                  i: point_down.i,
-                  j: point_down.j,
-                };
-
-                root = 1;
-                count = 0;
-                cycle = 'down';
-                road = path;
-                path = '';
-              } else {
-                island = path;
-                return;
-              }
-            }
-            
-            if (count == 0){
-              path += 'M';
-            } else {
-              if (!stright){
-                path += 'L';
-              }
-            }
-            
-            m = cycle_points.i;
-            n = cycle_points.j;
-            
-            stright = false;
-            
-            switch(root){
-              case 0:
-                
-                if (array[m - 1] && (array[m - 1][n - 1] === 0 || array[m - 1][n - 1] == 2)){
-                  root = 6;
-                  cycle_points.i--;
-                  cycle_points.j--;
-                } else if (array[m][n - 1] === 0 || array[m][n - 1] == 2) {
-                  cycle_points.j--;
-                  stright = true;
-                } else {
-                  root = 2;
-                }
-
-                if (!stright){
-                  path += (m * cell) + ',' + ((n + 1) * cell) + 'L' + (m * cell) + ',' + (n * cell);
-                  count = 0;
-                } 
-                
-              break;
-              case 1:
-                                
-                if (array[m + 1] && (array[m + 1][n + 1] === 0 || array[m + 1][n + 1] == 2)){
-                  root = 3;
-                  cycle_points.i++;
-                  cycle_points.j++;
-                } else if (array[m + 1] && (array[m + 1][n] === 0 || array[m + 1][n] == 2)){
-                  cycle_points.i++;
-                  stright = true;                
-                } else {
-                  root = 7;
-                }
-
-                if (!stright){
-                  path += (m * cell) + ',' + ((n + 1) * cell) + 'L' + ((m + 1) * cell) + ',' + ((n + 1) * cell);
-                  count = 0;
-                } 
-
-              break;
-              case 2:
-              
-                                
-                if (array[m + 1] && (array[m + 1][n - 1] === 0 || array[m + 1][n - 1] == 2)){
-                  root = 0;
-                  cycle_points.i++;
-                  cycle_points.j--;
-                } else if (array[m + 1] && (array[m + 1][n] === 0 || array[m + 1][n] == 2)){
-                  cycle_points.i++;
-                  stright = true;
-                } else {
-                  root = 4;
-                }
-
-                if (!stright){
-                  path += (m * cell) + ',' + (n * cell) + 'L' + ((m + 1) * cell) + ',' + (n * cell);
-                  count = 0;
-                } 
-
-              break;
-              case 3: 
-                                
-                if (array[m - 1] && (array[m - 1][n + 1] === 0 || array[m - 1][n + 1] == 2)){
-                  root = 5;
-                  cycle_points.i--;
-                  cycle_points.j++;
-                } else if (array[m][n + 1] === 0 || array[m][n + 1] == 2){
-                  cycle_points.j++;
-                  stright = true;                
-                } else {
-                  root = 1;
-                }
-
-                if (!stright){
-                  path += (m * cell) + ',' + (n * cell) + 'L' + (m * cell) + ',' + ((n + 1) * cell);
-                  count = 0;
-                } 
-
-              break;
-              case 4:
-                                
-                if (array[m + 1] && (array[m + 1][n + 1] === 0 || array[m + 1][n + 1] == 2)){
-                  root = 2;
-                  cycle_points.i++;
-                  cycle_points.j++;
-                } else if (array[m][n + 1] === 0 || array[m][n + 1] == 2){
-                  cycle_points.j++;
-                  stright = true;                
-                } else {
-                  root = 6;
-                }
-
-                if (!stright){
-                  path += ((m + 1) * cell) + ',' + (n * cell) + 'L' + ((m + 1) * cell) + ',' + ((n + 1) * cell);
-                  count = 0;
-                } 
-
-              break;
-
-              case 5:
-                                
-                if (array[m - 1] && (array[m - 1][n - 1] === 0 || array[m - 1][n - 1] == 2)){
-                  root = 7;
-                  cycle_points.i--;
-                  cycle_points.j--;
-                } else if (array[m - 1] && (array[m - 1][n] === 0 || array[m - 1][n] == 2)){
-                  cycle_points.i--;
-                  stright = true;                
-                } else {
-                  root = 3;
-                }
-
-                if (!stright){
-                  path += ((m + 1) * cell) + ',' + (n  * cell) + 'L' + (m * cell) + ',' + (n * cell);
-                  count = 0;
-                } 
-
-
-              break;            
-              case 6:
-                                
-                if (array[m - 1] && (array[m - 1][n + 1] === 0 || array[m - 1][n + 1] == 2)){
-                  root = 4;
-                  cycle_points.i--;
-                  cycle_points.j++;
-                } else if (array[m - 1] && (array[m - 1][n] === 0 || array[m - 1][n] == 2)){
-                  cycle_points.i--;
-                  stright = true;                
-                } else {
-                  root = 0;
-                }
-
-                if (!stright){
-                  path += ((m + 1) * cell) + ',' + ((n + 1) * cell) + 'L' + (m  * cell) + ',' + ((n + 1) * cell);
-                  count = 0;
-                } 
-
-              break;
-              case 7:
-                
-                if (array[m + 1] && (array[m + 1][n - 1] === 0 || array[m + 1][n - 1] == 2)){
-                  root = 1;
-                  cycle_points.i++;
-                  cycle_points.j--;
-                } else if (array[m][n - 1] === 0) {
-                  cycle_points.j--;
-                  stright = true;
-                } else {
-                  root = 5;
-                }
-
-                if (!stright){
-                  path += ((m + 1) * cell) + ',' + ((n + 1) * cell) + 'L' + ((m + 1) * cell) + ',' + (n * cell);
-                  count = 0;
-                } 
-              break;        
-            }
-            
-            if (count > p.radius){
-              return;
-            } else {
-              count++;
-              draw_and_check_root();
-            }
-          };
-          
-          draw_and_check_root();
+          for(i = 0; i < lines.length; i++){
+            path += 'M' + lines[i][0].x + ',' + lines[i][0].y + 'L' + lines[i][1].x + ',' + lines[i][1].y + 
+              'L' + lines[i][2].x + ',' + lines[i][2].y + 'L' + lines[i][3].x + ',' + lines[i][3].y  + 'Z';
+          }         
                     
           return_field = {            
-            road: svg.path(road).attr(p.attr_road),
-            island: svg.path(island).attr(p.attr_island),
+            border: svg.path(path).attr(p.attr_border),            
+            road: svg.path(path).attr(p.attr_road),
             finish: {
               el: svg.path(finish).attr(p.attr_finish),
               point_up: point_up,
@@ -510,7 +451,7 @@
           };
                   
           return return_field;
-        }(road_array, road_params, paper));
+        }(rects, road_array, road_params, paper));
         
         var proto_racers = {
           
@@ -805,9 +746,14 @@
               var s = sizes;
               var level;
               var multy = 0.2;
+              var no_view = road_params.free_view;
               
               return function (x_racer,  y_racer, count){        
-          
+                
+                if (no_view){
+                  return;
+                }
+                
                 if (this.current_speed_root.s == 0){
                   older_level = 0;
                 }
