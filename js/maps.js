@@ -1,7 +1,11 @@
-var road = {
+var roads = [
+{
+
   finish: 350, 
-  width_finish: 0.01,
   fill: '34-#203-#002',
+  name: 'maze',
+  radius: 1000,  
+  
   array: [
   {x: 200, y: 100,  b: 50},
   {x: 250, y: 200, b: 100},
@@ -25,4 +29,9 @@ var road = {
   {x: 100, y: 950, b: 20},
   {x: 100, y: 100, b: 50},
   ],
-};
+  boxes: [
+    {i: 800, j: 130, size: 20},
+    {i: 840, j: 100, size: 50},
+  ]
+},
+];

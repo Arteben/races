@@ -19,6 +19,7 @@
     var ENGINE = {};
 
     ENGINE.main = main;
+    ENGINE.menu = menu;
 
     // main Application of the game
      var app = new PLAYGROUND.Application({
@@ -35,8 +36,7 @@
       },
       // call after loading
       ready: function(){
-        
-        this.setState(ENGINE.main);
+        this.setState(ENGINE.menu);
       },
       
       resize: function(){

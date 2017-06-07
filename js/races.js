@@ -1,17 +1,17 @@
-
-var steps_rival = {
+var races = [
+{
         
   //'time': 3913,
   //'frames': 20,
   //'start_i': 371,
   //'start_j': 200,
-
+        
+        road: 0,
         time: 3913,
-        frames: 20,
-        start: {
-          i: 371,
-          j: 200,
-        },
+        name: 'Green!',
+        color: '#5D5',
+        i: 371,
+        j: 200,
         array: [
  {
   's': 0,
@@ -1203,20 +1203,19 @@ var steps_rival = {
   'start_i': 371,
   'start_j': 200,
  },
-], };
-
-var steps_rival_2 = {
+], 
+},
+{
   //'time': 3777,
   //'frames': 20,
   //'start_i': 371,
   //'start_j': 192,
-
         time: 3777,
-        frames: 20,
-        start: {
-          i: 371,
-          j: 192,
-        },
+        name: 'Blue!',
+        i: 371,
+        j: 192,
+        color: '#55D',
+        road: 0,
         array: [
  {
   's': 0,
@@ -2337,5 +2336,5 @@ var steps_rival_2 = {
   'start_j': 192,
  },
 ],
-}
-
+},
+];
