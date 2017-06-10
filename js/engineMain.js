@@ -6,7 +6,7 @@ var main = {
     var paper = app._svg_;
     var sizes = app._sizes_;
     
-    var settings = this.app._settings_;
+    var settings = app._settings_;
     
     var road = roads[settings.road];
     
@@ -406,7 +406,6 @@ var main = {
                     
           if (check_corner){
             boxes += set_path_border({i: i, j: j, root: 0}, 3);
-            console.log('boxes',  boxes);
           }            
           
         }
@@ -1049,14 +1048,14 @@ var main = {
     };      
                         
     var popup = {
-      el: document.body.appendChild(document.createElement('div')),
+      steps: {
+        count: 0,
+        frames: 0,
+        go: false,        
+      },
+      el: document.getElementById('div_popup'),
       set_start_attr: function(){
         this.el.style.display = 'none';
-        this.el.style.position = 'absolute';
-        this.el.style.backgroundColor = 'rgb(0, 0, 0)';
-        this.el.style.padding = '10px';
-        this.el.style.color = '#944';
-        this.el.style.fontSize = '24px';
       },
       set_left_top: function(){
         this.el.style.left = ((sizes.w - this.el.clientWidth) / 2) + 'px';
@@ -1118,20 +1117,116 @@ var main = {
       },
     };
     
+    var popup_finish = {
+      el: document.getElementById('div_popup_finish'),
+      
+      show: false,
+      
+      to_show: function(){
+        
+        this.show = true;
+        this.el.style.display = "block";
+        this.el.style.left = (sizes.w - this.el.clientWidth) / 2;
+        this.el.style.top = (sizes.h - this.el.clientHeight) / 2;
+      },
+      
+      to_hide: function(){
+        this.show = false;
+        this.el.style.display = "none";
+      },
+      
+      set_clicks: function(){
+        var bottons = this.el.getElementsByTagName('input');
+        
+        bottons[0].onclick = function(){
+          popup_finish.to_hide();
+          settings.call_menu();
+        },
+        
+        bottons[1].onclick = function(){
+          popup_finish.to_hide();
+          game.restart();
+        };
+      },
+      
+      set_text: function(text){
+
+        span = this.el.getElementsByTagName('div');
+        
+        span[0].innerHTML = text;
+      },      
+    };
+    
+    popup_finish.set_clicks();
+    
     var steps_popup = {
       count: 0,
       frames: 0,
       go: false,
     };
     
+    // menu_game
+    var menu = {
+      show: false,
+      el: document.getElementById('div_menu'),
+      time: 0,
+      sum_time: 0,
+      
+      set_sizes: function(){
+        this.el.style.display = 'block';
+        this.el.style.left = (sizes.w - this.el.clientWidth) / 2;
+        this.el.style.top = (sizes.h - this.el.clientHeight) / 2; 
+      },
+      
+      set_clicks: function(){
+              
+        var bottons = this.el.getElementsByTagName('input');
+               
+        bottons[0].onclick = function(){
+          menu.to_hide();
+          game.restart();
+        };
+        
+        bottons[1].onclick = function(){
+          menu.to_hide();
+          settings.call_menu()
+        };
+        
+        bottons[2].onclick = function(){
+          menu.to_hide();
+        };
+      },
+      
+      
+      to_show: function(){
+        this.show = true;
+        this.set_sizes();
+        this.time = (new Date()).getTime();
+      },
+      
+      to_hide: function(){
+        this.sum_time += (new Date()).getTime() - this.time;
+        this.time = 0;  
+        this.show = false;
+        this.el.style.display = 'none';
+      },
+    };
+    
+    menu.set_clicks();
+    
     // controls the game
     var game = {
+      menu: menu,
       params: road_params,
       sizes: sizes,
       svg: paper,
       array: road_array,
       field: field,
       racer: null,
+      human_time: {
+        time_start: 0,
+        time_end: 0,
+      },
       racer_keypress: {
         right: false,
         left: false,
@@ -1208,17 +1303,37 @@ var main = {
       },
       rival: [],
       wins: '',
-      steps_up: steps_popup,
       up: popup,
+      up_finish: popup_finish,
       frames: 1000 / speed,
       // begin, main, end
       status: '',
       timer: 0,
+      get_human_time: function(time){
+            
+            var sec;
+            var min;
+                        
+            sec = time / 1000;
+            min = Math.floor(sec / 60);
+            sec = Math.floor(sec - min * 60);
+            
+            return '' + min + ':' + sec;
+      },
+      finish_game: function(fly){
+        this.status = 'end';
+        this.human_time.time_end = (new Date()).getTime();
+      },  
       restart: function(){
 
         this.up.rend_finish = true;
         this.timer = 0;
         this.racer_keypress.clear_all();  
+        this.human_time = 0;
+        
+        this.menu.show = false;
+        this.menu.sum_time = 0;
+        this.menu.time = 0;
 
         log_trace.call(this);
         
@@ -1247,21 +1362,21 @@ var main = {
       },
       steps_start: function(){
         
-        if (this.steps_up.count == 0){
+        
+        if (this.up.steps.count == 0){
                         
-          if (this.steps_up.go){
-            this.steps_up.count++;
+          if (this.up.steps.go){
+            this.up.steps.count++;
           }
           
-        } else if (this.steps_up.count < this.steps_up.frames){
+        } else if (this.up.steps.count < this.up.steps.frames){
           
-          this.steps_up.count++;
+          this.up.steps.count++;
         
         } else {
-          
-          this.steps_up.count = 0;
-          this.status = 'main';              
-          
+          this.up.steps.count = 0;
+          this.status = 'main';
+          this.human_time.time_start = (new Date()).getTime();
         }
       },
       // start_game!
@@ -1273,7 +1388,7 @@ var main = {
         this.status = 'begin';            
             
         this.up.set_start_attr();                    
-        this.steps_up.frames = 100;        
+        this.up.steps.frames = 100;        
         
         for (count = 0; count < races.length; count++){ 
           if (races[count].road === settings.road){
@@ -1309,13 +1424,14 @@ var main = {
           if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
             this.racer.renders.status = false;
             this.racer.steps.cycle.status = false;
+            
             this.wins = {
               type: this.racer.type,
               name: this.racer.name,
               fly: this.racer.fly,
             };
-            this.status = 'end';
-            this.racer.speed = 0;
+            
+            this.finish_game();
           }    
         } else {
           if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
@@ -1531,6 +1647,7 @@ var main = {
             frames: this.frames,
             start_i: this.racer.start.i,
             start_j: this.racer.start.j,
+            millisecouns: this.human_time.time_end - this.human_time.time_start - this.menu.sum_time,
           });              
         } else {
           if (this.racer.steps.count == 0){
@@ -1794,7 +1911,9 @@ var main = {
                 name: rival.name,
                 fly: null,
               };
-              this.status = 'end';
+              
+              this.finish_game();
+              
               return;
             }
 
@@ -1865,8 +1984,9 @@ var main = {
     document.body.style.backgroundColor = road_params.body;    
     
     this._gm_ = game;
+    app._gm_ = game;
     
-    this.step = function(){
+    this.step = function(pps){
 
       var gm = this._gm_;
 
@@ -1876,9 +1996,10 @@ var main = {
         break;
         case 'main':
           gm.timer++;
-          gm.steps_for_racer();
-          gm.steps_for_rival();
-                      
+          if (!gm.menu.show){
+            gm.steps_for_racer();
+            gm.steps_for_rival();
+          }
         break;
         case 'end':
           //console.log('game_end!', this._gm_.timer);
@@ -1889,29 +2010,37 @@ var main = {
     this.render = function(){
       
       var gm = this._gm_; 
-      var i, len;
+      var i, len, time;
       
       switch(gm.status){
         case 'begin':
-          gm.up.computation_start(100 * gm.steps_up.count / gm.steps_up.frames);
+          gm.up.computation_start(100 * gm.up.steps.count / gm.up.steps.frames);
         break;
         case 'main':
-          if (gm.racer.renders.status){
-            gm.renders_for_racer();
-          }
-          
-          len = gm.rival.length;
-          
-          for(i = 0; i < len; i++){
-            if (gm.rival[i].renders.status){
-              gm.renders_for_rival(gm.rival[i]);
+          if (!gm.menu.show){
+            if (gm.racer.renders.status){
+              gm.renders_for_racer();
+            }
+            
+            len = gm.rival.length;
+            
+            for(i = 0; i < len; i++){
+              if (gm.rival[i].renders.status){
+                gm.renders_for_rival(gm.rival[i]);
+              }
             }
           }
         break;
         case 'end':
-          if (gm.up.rend_finish){
-            gm.up.show_finish(gm.timer, gm.wins.name);
-            gm.up.rend_finish = false;
+          if (!gm.up_finish.show){
+            
+            time = gm.human_time.time_end - gm.human_time.time_start - gm.menu.sum_time;
+            
+            console.log('время', time, gm.menu.sum_time);
+            
+            gm.up_finish.set_text('' + gm.wins.name + ' победил с временем ' +  gm.get_human_time(time));
+            
+            gm.up_finish.to_show();
           }
         break;
       }          
@@ -1923,18 +2052,22 @@ var main = {
       
       switch (gm.status){
         case 'begin':
-          gm.steps_up.go = true;
+          gm.up.steps.go = true;
         break;
         case 'main':
           if (data.key == 'escape'){
-            gm.restart();
+            gm.menu.to_show();
+          }
+          
+          if (gm.menu.show && data.key == 'escape'){
+            gm.menu.to_hide();
           }
           
           gm.racer_keypress.set(data.key);
 
         break;
         case 'end':
-          gm.restart();
+          //gm.restart();
         break;
       }
     };

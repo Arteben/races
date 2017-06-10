@@ -8,6 +8,7 @@ var races = [
         
         road: 0,
         time: 3913,
+        milliseconds: 39130,
         name: 'Green!',
         color: '#5D5',
         i: 371,
@@ -1211,10 +1212,11 @@ var races = [
   //'start_i': 371,
   //'start_j': 192,
         time: 3777,
+        milliseconds: 37770,
         name: 'Blue!',
         i: 371,
         j: 192,
-        color: '#55D',
+        color: '#66D',
         road: 0,
         array: [
  {

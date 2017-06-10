@@ -3,15 +3,257 @@
     <meta charset="utf-8"/>
     <title> Races </title>
     <style>
+
+    #table_menu {
+      display: none;
+      color: #DDD;
+      font-size: 14px;
+      font-family: Verdana, Arial;
+      text-weight: bold;
+      background-color: #434;
+      border-radius: 10px;
+      border: 10px groove #DDD;
+      position: absolute;
+      z-index: 100; 
+    }
+    
+    #table_menu td {
+      text-align: center;
+    }
+    
+    INPUT {
+      font-family: Verdana, Arial;
+      text-weight: bold;
+      border-radius: 5px;
+      border: 3px groove #DDD;
+      text-align: center;
+      height: 30px;
+    }
+
+    INPUT:hover {
+      background-color: #FFF;
+    }
+  
+    #input_name {
+      font-family: Verdana, Arial;
+      text-weight: bold;
+      border-radius: 5px;
+      border: 1px groove #DDD;
+      height: 30px;
+      width: 250px;
+      margin: 20px 30px;
+    }
+    
+    .img_racer {
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #222;
+      border: 3px groove #AAA;
+      margin: 10px 10px;
+      cursor: pointer;
+    }
+    
+    .img_racer:hover, .img_racer_choise {
+      border: 3px groove #FFF;
+    }
+    
+    .table_maps {
+      display: none;
+      width: 300px;
+      color: #AAA;
+      font-size: 12px;
+      font-family: Verdana, Arial;
+      text-weight: bold;
+      text-align: center;
+      border-radius: 10px;
+      border: 3px groove #AAA;
+      margin: 10px 30px;
+      cursor: pointer;
+    }
+    
+    .table_maps:hover, .table_maps_choise {
+      color: #FFF;
+      border: 3px groove #FFF;
+    }
+    
+    .choise_maps_name {
+      width: 150px;
+      overflow: auto;
+      font-size: 14px;
+      padding: 3px;
+      border-right: 2px solid #DDD;
+    }
+    
+    .choise_maps_user {
+      padding: 5px;
+      font-size: 12px,
+    }
+    
+    .choise_maps_user_2 {
+      padding: 3px;
+      font-size: 10px;
+    }
+    
+    #td_controls{
+      text-align: left;
+      padding: 10px;
+      border-left: 2px solid #DDD;
+    }
+    
+    #td_controls div {
+      width: 200px;
+      text-align: left
+    }
+    
+    a {
+      color: #DDD;
+      font-size: 12px;
+      font-family: Verdana, Arial;
+      text-weight: bold;    
+    }
+    
+    #td_maps_collection {
+      height: 210px;
+      overflow-y: auto;
+    }
+    
+    #div_menu {
+      color: #DDD;
+      border-radius: 10px;
+      border: 10px groove #DDD;
+      position: absolute;
+      z-index: 100; 
+      display: none;
+      width: 150px;
+      padding: 5px auto;
+      background-color: #434;
+            
+    }
+    
+    #div_menu input {
+      width: 130px;
+      margin: 5px 10px;
+    }
+    
+    #div_popup, #div_popup_finish{
+      color: #DDD;
+      position: absolute;
+      display: none;
+      z-index: 100;
+      background-color: #434;
+      font-size: 20px;
+      font-family: Verdana, Arial;
+      text-weight: bold;
+      text-align: center;
+      padding: 10px;
+    }
+    
+    #div_popup_finish {
+      text-align: center;
+      border-radius: 10px;
+      border: 10px groove #DDD;
+      width: 400px;
+      height: 80px;
+      padding: 10px;
+    }
+
+    #div_popup_finish div {
+      font-size: 16px;
+      width: 380px;
+      height: 30px;
+      margin: 10px;
+    }
+
     </style>
-    <script src="js/playground-base.js"></script>
-    <script src="js/raphael.js"></script>
+    <script src="js/libs/playground-base.js"></script>
+    <script src="js/libs/raphael.js"></script>
     <script src="js/maps.js"></script>
     <script src="js/races.js"></script>
     <script src="js/engineMenu.js"></script>
     <script src="js/engineMain.js"></script>
   <head/>
   <body>
+    <table id = "table_menu">
+      <tr>
+        <td colspan="3">
+          <input type="text" id = "input_name"   maxlength="50" autofocus tabindex="1"/>
+        </td>
+        <td colspan="3" rowspan="3" id="td_controls" >
+          <div>
+          Управление(стрелками): <br/>
+          UP - увеличить скорость <br/>
+          DOWN - уменьшить скорость </br>
+          RAIGHT - повернуть направо </br>
+          LEFT - повернуть налево <br/><br/>
+          ESCAPE - вызвать меню игры <br/><br/><br/>
+          оттестировано под chromium 
+          </div>
+        </td>        
+      </tr>
+      <tr>
+        <td>
+          <img src="img/blue.png" class="img_racer"/>
+        </td>
+        <td>
+          <img src="img/red.png" class="img_racer"/>          
+        </td>
+        <td>
+          <img src="img/green.png" class="img_racer"/>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" id="td_maps_collection">  
+          
+        </td>
+      </tr>
+      <tr> 
+        <td colspan="2">
+          <input type="button" id="button_sounds" value="Звук выкл."/>
+        </td>
+        <td colspan="1">
+          <input type="button" id="button_start" tabindex="2" value="Играть!">
+        </td>
+        <td colspan="3" rowspan="1" class = "td_title" id = "td_chromium">
+          <a href="http://playgroundjs.com/"> play-ground.js</a> <br/>
+          <a href="http://raphaeljs.com/"> raphael.js</a>  <br/>        
+        </td>        
+      </tr>
+    </table>
+  
+    <table class="table_maps">
+      <tr>
+        <td rowspan="3" class="choise_maps_name">
+
+        </td>
+        <td class="choise_maps_user">
+
+        </td>
+      </tr>
+      <tr>
+        <td class="choise_maps_user_2">
+      
+        </td>
+      </tr>
+    </table>
+
+    <div id = "div_menu">
+      <input type="button" tabindex="1" value="Рестарт"/>
+      <input type="button" tabindex="2" value="Выйти в меню"/>
+      <input type="button" tabindex="2" value="Продолжить"/>    
+    </div>
+
+    <div id="div_popup">
+      
+    </div>
+    
+    <div id="div_popup_finish">
+      <div></div>
+      <input type="button" tabindex="1" value="Выйти в меню"/>
+      <input type="button" tabindex="2" value="Рестарт"/>    
+    </div>
+    
+    
+    
     <script>
     
     var params = {};
@@ -46,7 +288,6 @@
         
         this._svg_.canvas.style.width = this._svg_.canvas.width = this._svg_.width = this._sizes_.w;
         this._svg_.canvas.style.height = this._svg_.canvas.height = this._svg_.height = this._sizes_.h;
-        
       },   
     });
 
