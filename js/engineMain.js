@@ -19,11 +19,12 @@ var main = {
       attr_road: {'stroke': '#000', 'stroke-width': 10, 'fill': road.fill},
       attr_border: {'stroke': '#444', 'stroke-width': 100, 'stroke-linejoin': 'round'},
       attr_finish: {'stroke': '#DD3', 'stroke-width': 15, 'stroke-linecap': 'round'},
-      attr_boxes: {'stroke': '#DDD', 'stroke-width': 5, 'stroke-linejoin': 'round', 'fill': '#111'},
+      attr_boxes: {'stroke': '#000', 'stroke-width': 10, 'stroke-linejoin': 'round', 'fill': '#444'},
       get_size: function(){
         this.size = this.cell * this.radius;
       },
       free_view: false,
+      renders_rivals: true,
     };   
     
     var speed = 50;
@@ -1006,6 +1007,7 @@ var main = {
         };
 
         this.steps = {
+          cycle: true,
           count: 0, 
           bit: 0,
           begin_path: '',
@@ -1157,8 +1159,6 @@ var main = {
       },      
     };
     
-    popup_finish.set_clicks();
-    
     var steps_popup = {
       count: 0,
       frames: 0,
@@ -1211,9 +1211,7 @@ var main = {
         this.el.style.display = 'none';
       },
     };
-    
-    menu.set_clicks();
-    
+        
     // controls the game
     var game = {
       menu: menu,
@@ -1223,10 +1221,7 @@ var main = {
       array: road_array,
       field: field,
       racer: null,
-      human_time: {
-        time_start: 0,
-        time_end: 0,
-      },
+      time_start: 0,
       racer_keypress: {
         right: false,
         left: false,
@@ -1302,13 +1297,14 @@ var main = {
         },
       },
       rival: [],
-      wins: '',
+      wins: null,
       up: popup,
       up_finish: popup_finish,
       frames: 1000 / speed,
       // begin, main, end
       status: '',
       timer: 0,
+      
       get_human_time: function(time){
             
             var sec;
@@ -1320,16 +1316,14 @@ var main = {
             
             return '' + min + ':' + sec;
       },
-      finish_game: function(fly){
-        this.status = 'end';
-        this.human_time.time_end = (new Date()).getTime();
-      },  
+      
       restart: function(){
 
         this.up.rend_finish = true;
         this.timer = 0;
         this.racer_keypress.clear_all();  
-        this.human_time = 0;
+        this.time_start = 0;
+        this.wins = null;
         
         this.menu.show = false;
         this.menu.sum_time = 0;
@@ -1360,6 +1354,7 @@ var main = {
           console.log(']');              
         }
       },
+      
       steps_start: function(){
         
         
@@ -1376,10 +1371,11 @@ var main = {
         } else {
           this.up.steps.count = 0;
           this.status = 'main';
-          this.human_time.time_start = (new Date()).getTime();
+          this.time_start = (new Date()).getTime();
         }
       },
-      // start_game!
+
+      // start_game!      
       start_game: function(){
       
         var xy, i, j;
@@ -1411,12 +1407,14 @@ var main = {
         this.racer = new CreateRacer(true, {i: i, j: j, name: settings.name, color: settings.color});                                                    
         
       },
+      
       get_ij_from_xy: function(x, y){
         return {
           i: Math.floor(x / this.params.cell),
           j: Math.floor(y / this.params.cell),
         };
       },
+      
       check_finish_racer: function(){
                       
         if (this.racer.current_speed_root.r > 0 && this.racer.current_speed_root.r < 4){
@@ -1425,13 +1423,16 @@ var main = {
             this.racer.renders.status = false;
             this.racer.steps.cycle.status = false;
             
-            this.wins = {
-              type: this.racer.type,
-              name: this.racer.name,
-              fly: this.racer.fly,
-            };
+            if (this.wins === null){            
+              this.wins = {
+                type: this.racer.type,
+                name: this.racer.name,
+                fly: this.racer.fly,
+                human_time: this.get_human_time((new Date()).getTime() - this.time_start - this.menu.sum_time), 
+              };
+            }
             
-            this.finish_game();
+            this.status = 'end';            
           }    
         } else {
           if (this.array[this.racer.coord.i][this.racer.coord.j] == 2){
@@ -1439,6 +1440,7 @@ var main = {
           }
         }
       },
+      
       // calcuts_x_y from i, j
       calcuts_x_y: function(i, j){
                           
@@ -1447,6 +1449,7 @@ var main = {
             y: j * road_params.cell + road_params.cell / 2,
           };
       },
+
       // goes move for racer
       racer_go: function(racer){
       
@@ -1614,6 +1617,7 @@ var main = {
           //racer.set(racer_i, racer_j);
         }            
       },
+
       // calcuts x, y for next frame rendering racer  
       steps_for_racer: function(){
                                   
@@ -1647,7 +1651,7 @@ var main = {
             frames: this.frames,
             start_i: this.racer.start.i,
             start_j: this.racer.start.j,
-            millisecouns: this.human_time.time_end - this.human_time.time_start - this.menu.sum_time,
+            millisecouns: this.wins.human_time,
           });              
         } else {
           if (this.racer.steps.count == 0){
@@ -1668,6 +1672,7 @@ var main = {
           }
         }
       },
+
       set_renders_racer_rival: function(racer){
         
         var xy;
@@ -1735,6 +1740,7 @@ var main = {
           racer.set(racer.steps.goal.i, racer.steps.goal.j);
         }          
       },
+
       //draw freme for move racer
       renders_for_racer: function(){
       
@@ -1746,106 +1752,12 @@ var main = {
                                
         this.racer.set_path('anim', rnds.path, rnds.fire);                       
       },
+
       steps_for_rival: (function(){                      
         // calcuts the go
         
         var rival;
         var choise;
-        var check_render = function(flay, num){
-          
-          var check;
-          
-          switch (flay[num].r){
-            case 0:
-              
-              check = (flay[num + 1].i == flay[num].i && 
-                        flay[num + 1].j == flay[num].j - flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-              
-            break;
-            case 1:
-              check = (flay[num + 1].i == flay[num].i + flay[num].s && 
-                        flay[num + 1].j == flay[num].j - flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-            break;
-            case 2: 
-              check = (flay[num + 1].i == flay[num].i + flay[num].s && 
-                        flay[num + 1].j == flay[num].j);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-
-            break;
-            case 3: 
-              check = (flay[num + 1].i == flay[num].i + flay[num].s && 
-                        flay[num + 1].j == flay[num].j + flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-
-            break;
-            case 4: 
-              
-               check = (flay[num + 1].i == flay[num].i && 
-                        flay[num + 1].j == flay[num].j + flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-
-            break;
-            case 5: 
-              check = (flay[num + 1].i == flay[num].i - flay[num].s && 
-                        flay[num + 1].j == flay[num].j + flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-            break;
-            case 6:
-              check = (flay[num + 1].i == flay[num].i - flay[num].s && 
-                        flay[num + 1].j == flay[num].j);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-
-            break;
-            case 7: 
-              check = (flay[num + 1].i == flay[num].i - flay[num].s && 
-                        flay[num + 1].j == flay[num].j - flay[num].s);
-              
-              if (check){
-                return true;
-              } else {
-                return false;
-              }
-              
-            break;
-          }              
-        };
         
         var set_goal = function(goal, the, ij){
           var xy;
@@ -1865,15 +1777,14 @@ var main = {
             
             if (rival.flay[rival.steps.num].s === 0 && 
                     rival.flay[rival.steps.num].wait > rival.steps.wait){
+              
               rival.steps.wait++;
               rival.renders.status = false;
+            
             } else {
                                               
               if (rival.steps.count == 0){
-                
-                
-                if (check_render(rival.flay, rival.steps.num)){
-                  
+                                  
                   rival.root = rival.flay[rival.steps.num].r;
                   
                   rival.speed = rival.flay[rival.steps.num + 1].s;
@@ -1881,14 +1792,6 @@ var main = {
                   set_goal(rival.steps.goal, this, rival.flay[rival.steps.num + 1]);
                    
                   this.set_renders_racer_rival(rival);
-                
-                } else {
-                                                                
-                  rival.root = rival.flay[rival.steps.num + 1].r;
-                  rival.speed = 0;
-                  rival.set(rival.flay[rival.steps.num + 1].i ,
-                                    rival.flay[rival.steps.num + 1].j);
-                }
                                   
               } else {
                 this.set_renders_racer_rival(rival);
@@ -1906,14 +1809,14 @@ var main = {
           } else {
             if (this.timer >= rival.time){
               rival.renders.status = false;
+              rival.steps.cycle = false;
               this.wins = {
                 type: rival.type,
                 name: rival.name,
                 fly: null,
+                human_time: this.get_human_time((new Date()).getTime() - this.time_start - this.menu.sum_time), 
               };
-              
-              this.finish_game();
-              
+                    
               return;
             }
 
@@ -1922,22 +1825,26 @@ var main = {
         };
         
         return function(){
-        
+              
           var i, len;
           
           len = this.rival.length;
         
           for (var i = 0; i < len; i++){
-            rend_for_rival.call(this, this.rival[i]);
+            if (this.rival[i].steps.cycle){
+              rend_for_rival.call(this, this.rival[i]);
+            }
           }
         };
       }()),
+
       renders_for_rival: function(rival){
                 
         rival.set_racer(rival.renders.racer.x, rival.renders.racer.y, rival.root);                   
         rival.set_path('anim', rival.renders.path, rival.renders.fire); 
                               
       },
+
       key_check_for_racer: function(){
         
         if (this.racer_keypress.up){
@@ -1976,6 +1883,9 @@ var main = {
 
       },
     };
+    
+    popup_finish.set_clicks();
+    menu.set_clicks();
 
     road_params.get_size();
     
@@ -1998,7 +1908,11 @@ var main = {
           gm.timer++;
           if (!gm.menu.show){
             gm.steps_for_racer();
-            gm.steps_for_rival();
+            
+            if (gm.params.renders_rivals){
+              gm.steps_for_rival();
+            }
+          
           }
         break;
         case 'end':
@@ -2034,11 +1948,7 @@ var main = {
         case 'end':
           if (!gm.up_finish.show){
             
-            time = gm.human_time.time_end - gm.human_time.time_start - gm.menu.sum_time;
-              
-            console.log('время', time, gm.menu.sum_time);
-            
-            gm.up_finish.set_text('' + gm.wins.name + ' победил с временем ' +  gm.get_human_time(time));
+            gm.up_finish.set_text('' + gm.wins.name + ' победил с временем ' +  gm.wins.human_time);
             
             gm.up_finish.to_show();
           }
@@ -2056,11 +1966,11 @@ var main = {
         break;
         case 'main':
           if (data.key == 'escape'){
-            gm.menu.to_show();
-          }
-          
-          if (gm.menu.show && data.key == 'escape'){
-            gm.menu.to_hide();
+            if (gm.menu.show){
+              gm.menu.to_hide()
+            } else {
+              gm.menu.to_show();
+            }
           }
           
           gm.racer_keypress.set(data.key);
