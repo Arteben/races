@@ -2035,7 +2035,7 @@ var main = {
           if (!gm.up_finish.show){
             
             time = gm.human_time.time_end - gm.human_time.time_start - gm.menu.sum_time;
-            
+              
             console.log('время', time, gm.menu.sum_time);
             
             gm.up_finish.set_text('' + gm.wins.name + ' победил с временем ' +  gm.get_human_time(time));
