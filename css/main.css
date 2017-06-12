@@ -150,10 +150,12 @@ a {
   padding: 10px;
 }
 
+#div_popup_finish span {
+  font-size: 20px;
+}
+
 #div_popup_finish div {
   font-size: 16px;
   width: 380px;
-  height: 30px;
-  margin: 10px;
-  padding: 10px
+  padding: 10px;
 }

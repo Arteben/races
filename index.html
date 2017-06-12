@@ -6,7 +6,6 @@
     <script src="js/libs/playground-base.js"></script>
     <script src="js/libs/raphael.js"></script>
     <script src="js/maps.js"></script>
-    <script src="js/races.js"></script>
     <script src="js/engineMenu.js"></script>
     <script src="js/engineMain.js"></script>
   <head/>
@@ -86,12 +85,12 @@
     
     <div id="div_popup_finish">
       <div></div>
-      <input type="button" tabindex="1" value="Выйти в меню"/>
-      <input type="button" tabindex="2" value="Рестарт"/>    
+      <div>
+        <span></span><br/><br/>
+        <input type="button" tabindex="1" value="Выйти в меню"/>
+        <input type="button" tabindex="2" value="Рестарт"/>
+      </div>  
     </div>
-    
-    
-    
     <script>
     
     var params = {};
@@ -106,7 +105,7 @@
 
       //there is loading resorce
       create: function(){
-
+                
         this._sizes_ = {
           w: window.innerWidth,
           h: window.innerHeight,

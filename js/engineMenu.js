@@ -8,7 +8,14 @@ var menu = {
         var app = this.app; 
         var sizes = this.app._sizes_;
         var svg = this.app._svg_;
+                
+        var races = {
+            count: 0,
+            array: [],
+        };
         
+        app._races_ = races;
+                            
         var menu = document.getElementById('table_menu');
         var input_name = document.getElementById('input_name');
         
@@ -21,9 +28,9 @@ var menu = {
         };
                 
         var cookie;
-                
+                        
         if (document.cookie !== ''){
-            cookie = document.cookie.split(';');
+            cookie = document.cookie.split('+');
         }
         
         if (cookie === undefined){
@@ -31,31 +38,88 @@ var menu = {
         } else {
             set_race = +cookie[0];
         }
-
-        set_choise_races(set_race);
         
         if (cookie !== undefined){
+                        
             if (cookie[1]){
                 input_name.value = cookie[1];                                
             }
         }
+                
+        app._call_menu_ = function(maps){
+    
+            var collection;
+            var i;
+            var tables
         
-        get_maps();
-        
-        set_cliks();
+            if (maps){
             
-        menu.style.display = 'block';
-        menu.style.left = (sizes.w - menu.clientWidth) / 2;
-        menu.style.top = (sizes.h - menu.clientHeight) / 2;
+                collection = document.getElementById('td_maps_collection');
+                tables = collection.getElementsByClassName('table_maps');
+                                
+                for (i = tables.length - 1; i >= 0; i--){
+                    collection.removeChild(tables[i]);
+                }
+                                
+                get_races();
+                
+                get_maps();
+            }
         
-        settings.call_menu = function(){
             menu.style.display = 'block';
             menu.style.left = (sizes.w - menu.clientWidth) / 2;
             menu.style.top = (sizes.h - menu.clientHeight) / 2;
-            the.app.setState(ENGINE.menu);
+            app.setState(ENGINE.menu);
         };
+
+        set_choise_races(set_race); 
+
+        get_races();
+
+        get_maps();
         
-        function set_cliks(){
+        ready_menu();
+
+        function get_races(){
+            
+            var arr = [];
+            var i;
+            
+            xhr = new XMLHttpRequest(); 
+                    
+            try {
+              xhr.open("GET", 'data/races.json', false);                            
+              xhr.send(null);
+              
+              races.array = [];
+              
+              if (xhr.responseText == ''){
+                races.count = 0;
+              } else {
+                
+                arr = JSON.parse(xhr.responseText)
+              }
+            } catch (e) {
+              console.log('settings error!', xhr.readyState);
+            }
+                
+            for (i in arr){
+                races.array.push(arr[i]);
+            }
+            
+            races.count = races.array.length;
+        }
+                
+        function ready_menu(){
+
+            set_clicks();
+        
+            menu.style.display = 'block';
+            menu.style.left = (sizes.w - menu.clientWidth) / 2;
+            menu.style.top = (sizes.h - menu.clientHeight) / 2;
+        }
+        
+        function set_clicks(){
             var i;
             var imgs = menu.getElementsByClassName('img_racer');
             var maps = menu.getElementsByClassName('table_maps');
@@ -72,18 +136,7 @@ var menu = {
                     };
                 }())
             }
-            
-            for (i = 0; i < maps.length; i++){
-                maps[i].onclick = (function(){
-                
-                    var num = i;
-                    
-                    return function(){
-                        set_choise_maps(num);    
-                    };
-                }());
-            }
-            
+                        
             botton_sound.onclick = function(){
                 if (settings.sounds){
                     settings.sounds = false;
@@ -101,21 +154,23 @@ var menu = {
         }
         
         function start_game(){
+
+            var input = document.getElementById('input_name');
+            
+            if (input.value != ''){
+                settings.name = input.value;
+            }
         
-            document.cookie = '' + set_race + ';' + settings.name;
+            document.cookie = '' + set_race + '+' + settings.name;
+                        
             the.app._settings_ = settings;
             menu.style.display = 'none';
-
-            the.step = function(){
-             
-                the.step = null;
-                                
-                if (the.app._gm_){
-                    the.app._gm_.restart();
-                }
-                
-                the.app.setState(ENGINE.main);
+                                     
+            if (the.app._call_game_){
+                the.app._call_game_();
             }
+            
+            the.app.setState(ENGINE.main);
         }
         
         function set_choise_maps(num){
@@ -151,14 +206,12 @@ var menu = {
             var tr_1_in_dom, tr_2_in_dom;
             var tr_1, tr_2;
             
-            
             var collection = document.getElementById('td_maps_collection');
             
             var one_map_in_dom = document.getElementsByClassName('table_maps')[0];
             var tr_1_in_dom = one_map_in_dom.getElementsByTagName('tr')[0];
             var tr_2_in_dom = one_map_in_dom.getElementsByTagName('tr')[1];
             
-                        
             var name;
             var show_races;
             
@@ -190,31 +243,47 @@ var menu = {
                 
                 show_races = [];
                                 
-                for (j = 0; j < races.length; j++){
-                    if (races[j].road == i){
+                for (j = 0; j < races.count; j++){
+                    
+                    if (races.array[j].road == i){
                         show_races.push({
-                            milli: races[j].milliseconds,
-                            time: get_human_time(races[j].milliseconds),
-                            name: races[j].name,
-                        });
+                            human_time: races.array[j].human_time,
+                            name: races.array[j].name,
+                            time: races.array[j].time,
+                        });                        
                     }
                 }
-                                
+                             
+                                                                        
                 tr_1.getElementsByTagName('td')[0].innerHTML += name;
-                
-                if (show_races.length > 1){
-                    if (show_races[0].milli > show_races[1].milli){
-                        tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].time;
-                        tr_2.getElementsByTagName('td')[0].innerHTML += show_races[1].name + ' ' + show_races[1].time;
+
+                if (show_races.length > 0){
+                    if (show_races.length > 1){
+                        if (show_races[0].time < show_races[1].time){
+                            tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
+                            tr_2.getElementsByTagName('td')[0].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
+                        } else {
+                            tr_1.getElementsByTagName('td')[1].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
+                            tr_2.getElementsByTagName('td')[0].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;                
+                        }
                     } else {
-                        tr_1.getElementsByTagName('td')[1].innerHTML += show_races[1].name + ' ' + show_races[1].time;
-                        tr_2.getElementsByTagName('td')[0].innerHTML += show_races[0].name + ' ' + show_races[0].time;                
+                        tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
                     }
                 }
                 
                 one_map.style.display = 'block';
+                
+                one_map.onclick = (function(){
+   
+                    var num = i;
+                    
+                    return function(){
+                        set_choise_maps(num);    
+                    };
+                
+                }());
+                
                 collection.appendChild(one_map);
-
             }
             
         }
@@ -259,8 +328,13 @@ var menu = {
             
             if (value == names[0] || value == names[1] || value == names[2] || value == ''){
                 input_name.value = name;
-                settings.name = name;
             }
         }
+     },
+     
+     ready: function(){
+     
+        console.log('ready!');
+        
      },
 };

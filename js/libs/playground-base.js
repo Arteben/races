@@ -1575,7 +1575,7 @@ PLAYGROUND.Application.prototype = {
       var extend = entry.key.indexOf("/") > -1;
 
       if (entry.ext === "json") {
-
+                                
         try {
 
           var data = JSON.parse(request.responseText);
