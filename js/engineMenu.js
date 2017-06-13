@@ -71,6 +71,8 @@ var menu = {
             menu.style.top = (sizes.h - menu.clientHeight) / 2;
             app.setState(ENGINE.menu);
         };
+        
+        app._get_races_ = get_races;
 
         set_choise_races(set_race); 
 

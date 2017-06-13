@@ -17,7 +17,7 @@ var main = {
       radius: road.radius,
       indent_finish: 10,
       size: 0,
-      body: '#222',
+      body: '#333',
       attr_road: {'stroke': '#000', 'stroke-width': 10, 'fill': road.fill},
       attr_border: {'stroke': '#444', 'stroke-width': 100, 'stroke-linejoin': 'round'},
       attr_finish: {'stroke': '#DD3', 'stroke-width': 15, 'stroke-linecap': 'round'},
@@ -1151,6 +1151,7 @@ var main = {
         
         bottons[1].onclick = function(){
           popup_finish.to_hide();
+          app._get_races_();
           game.restart();
         };
       },
@@ -1232,9 +1233,65 @@ var main = {
         this.el.style.display = 'none';
       },
     };
+    
+    
+    // anim hit rice with walls
+    var crash  = {
+      
+      anim: false,
+      count: 0,
+      frames: 100,
+      
+      rnds: {
+        r: 0,
+        stroke: 0.002,
+        op: 1,
+      },
+      
+      add_str: 0,
+      
+      el: paper.circle(0, 0, 0).attr({'stroke-opacity': 0.8, 'stroke': '#000',
+                              'fill': '#444', 'stroke-width': 20}),
+      
+      start: function(x, y, add){
+        this.el.toFront();
+        this.el.attr({'cx': x, 'cy': y});
+        this.anim = true;
+        this.el.show();
+        this.rnds.r = 0;
+        this.rnds.str = 0.02;
+        this.rnds.op = 1; 
+        this.add_str = add / 2;
+      },
+            
+      steps: function(){
+        
+        this.rnds.r += this.count * 0.01 + this.add_str + (this.count % 7) * 10;
+        this.rnds.op = 10 / this.count  + 0.5;
+        
+        if (this.rnds.op > 1){
+          this.rnds.op = 1;
+        }
+        
+        console.log('hits!', this.rnds.op);
+        
+        if (this.count > this.frames){
+          this.anim = false;
+          this.count = 0;
+          this.el.hide();
+        } else {
+          this.count += 10;
+        }
+      },
+      
+      renders: function(){
+        this.el.attr({'r': this.rnds.r, 'fill-opacity': this.rnds.op});
+      }
+    };
         
     // controls the game
     var game = {
+      hit: crash,
       menu: menu,
       params: road_params,
       sizes: sizes,
@@ -1676,9 +1733,12 @@ var main = {
         // breack racer in i, j
         function boomb(racer_i, racer_j){
           
+          var xy = the.calcuts_x_y(racer_i, racer_j);
+          the.hit.start(xy.x, xy.y, racer.speed);
+          
           if (racer_i == racer.coord.i && 
                             racer_j == racer.coord.j){
-            
+                        
             racer.speed = 0;
             racer.root = get_root(racer_i, racer_j);
             
@@ -1761,7 +1821,7 @@ var main = {
                 r: this.racer.root,
                 i: this.racer.coord.i,
                 j: this.racer.coord.j,
-                wait: false,
+                wait: 0,
               });
             } else {
                                         
@@ -1877,7 +1937,7 @@ var main = {
                                               
           if (rival.fly.length > rival.steps.num + 1){
             
-            if ( rival.fly[rival.steps.num].wait && 
+            if ( rival.fly[rival.steps.num].wait > 0 && 
                     rival.fly[rival.steps.num].wait > rival.steps.wait){
               
               rival.steps.wait++;
@@ -2015,7 +2075,7 @@ var main = {
       game.restart();
     };
     
-    this.step = function(pps){
+    this.step = function(){
 
       var gm = this._gm_;
 
@@ -2031,7 +2091,11 @@ var main = {
             if (gm.params.renders_rivals){
               gm.steps_for_rival();
             }
-          
+            
+            if (crash.anim){
+              gm.hit.steps();
+            }
+            
           }
         break;
         case 'end':
@@ -2063,7 +2127,7 @@ var main = {
     this.render = function(){
       
       var gm = this._gm_; 
-      var i, len, time;
+      var i, len;
       
       switch(gm.status){
         case 'begin':
@@ -2081,6 +2145,10 @@ var main = {
               if (gm.rival[i].renders.status){
                 gm.renders_for_rival(gm.rival[i]);
               }
+            }
+            
+            if(gm.hit.anim){
+              gm.hit.renders();
             }
           }
         break;
