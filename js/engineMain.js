@@ -5,11 +5,10 @@ var main = {
     var app = this.app;
     var paper = app._svg_;
     var sizes = app._sizes_;
-    
     var settings = app._settings_;
-    
     var races = app._races_;
-        
+    var sounds = app.sound;
+    
     var road = roads[settings.road];
     
     var road_params = { 
@@ -25,8 +24,9 @@ var main = {
       get_size: function(){
         this.size = this.cell * this.radius;
       },
-      free_view: false,
-      renders_rivals: true,
+      free_view: true,
+      renders_rivals: false,
+      volume_music: 0.3,
     };   
     
     var speed = 50;
@@ -895,7 +895,7 @@ var main = {
       };
       
       this.name  = params.name;
-      this.fill = params.color;
+      this.fill = '#' + params.color;
       
       // for racer of control user
       if (user){
@@ -1088,6 +1088,7 @@ var main = {
         
         this.el.style.visibility = '' + num;
       },
+      //countdown for start
       computation_start: function(persents){
         
           if (persents == 0){
@@ -1096,12 +1097,12 @@ var main = {
               this.set_visibility(1 / 100);
 
           } else if (persents < 30){
-                                
+              
               this.set_text('3!');
               this.set_visibility(persents / 100);
               
           } else if (persents < 60){
-            
+              
               this.set_text('2!');
               this.set_visibility(persents / 100);
               
@@ -1115,7 +1116,12 @@ var main = {
             this.set_text('START!');
             this.set_visibility(persents / 100);
             
+            if (persents == 90){
+              sounds.setVolume(sounds.play('bip', false), 1);
+            }
+
           } else {
+
             this.set_visibility(0);
           }
           
@@ -1146,6 +1152,7 @@ var main = {
         
         bottons[0].onclick = function(){
           popup_finish.to_hide();
+          sounds.stop(game.music);
           app._call_menu_(true);
         },
         
@@ -1211,6 +1218,7 @@ var main = {
         
         bottons[1].onclick = function(){
           menu.to_hide();
+          sounds.stop(game.music);
           app._call_menu_()
         };
         
@@ -1233,8 +1241,7 @@ var main = {
         this.el.style.display = 'none';
       },
     };
-    
-    
+        
     // anim hit rice with walls
     var crash  = {
       
@@ -1252,8 +1259,9 @@ var main = {
       
       el: paper.circle(0, 0, 0).attr({'stroke-opacity': 0.8, 'stroke': '#000',
                               'fill': '#444', 'stroke-width': 20}),
-      
+      // first step for hit
       start: function(x, y, add){
+      
         this.el.toFront();
         this.el.attr({'cx': x, 'cy': y});
         this.anim = true;
@@ -1262,19 +1270,20 @@ var main = {
         this.rnds.str = 0.02;
         this.rnds.op = 1; 
         this.add_str = add / 2;
+      
+        sounds.play('hit');
+        
       },
             
       steps: function(){
         
-        this.rnds.r += this.count * 0.01 + this.add_str + (this.count % 7) * 10;
+        this.rnds.r += this.count * 0.01 + this.add_str + app.ease(this.count / 100, 'inQuart') * 10;
         this.rnds.op = 10 / this.count  + 0.5;
         
         if (this.rnds.op > 1){
           this.rnds.op = 1;
         }
-        
-        console.log('hits!', this.rnds.op);
-        
+                
         if (this.count > this.frames){
           this.anim = false;
           this.count = 0;
@@ -1291,6 +1300,8 @@ var main = {
         
     // controls the game
     var game = {
+      sounds: sounds,
+      music: null,
       hit: crash,
       menu: menu,
       params: road_params,
@@ -1386,6 +1397,164 @@ var main = {
       status: '',
       timer: 0,
       
+      //set sounds for current place race
+      set_sounds_for_racer: (function(){
+        
+        var current;
+
+        var rate_for_speed;  
+        var rate_for_move; 
+        var rate_for_wind; 
+        var rate_for_rival_1;
+        var rate_for_rival_2;    
+       
+        var move;
+        var move_near_wall;
+        var rival_1;
+        var rival_2;
+        
+        var max_rate_for_speed = 0.05;
+        var max_rate_wind = 0.8;
+        var max_rate_for_rivals = 0.03;
+        
+        var lengths_to_rivals;
+        
+        var get_lengths_to_rivalsv = function(the){
+          
+          var racer_i = the.racer.coord.i;
+          var racer_j = the.racer.coord.j;
+          
+          var rival_1_i = the.rival[0].coord.i;
+          var rival_1_j = the.rival[0].coord.j;
+          var rival_2_i = the.rival[1].coord.i;
+          var rival_2_j = the.rival[1].coord.j;
+          
+          var length_1 = Math.abs(racer_i - rival_1_i) + Math.abs(racer_j - rival_1_j);
+          var length_2 = Math.abs(racer_i - rival_2_i) + Math.abs(racer_j - rival_2_j);
+          
+          if (length_1 <= 0){
+            length_1 = 0;
+          }
+          
+          if (length_2 <= 0){
+            length_2 = 0;
+          }
+          
+          return [
+            length_1,
+            length_2,
+          ];          
+        };
+        
+        var ask_wall = function(the, root){
+          
+          var i = the.racer.coord.i;
+          var j = the.racer.coord.j;
+          var radius = the.params.radius;
+          var arr = the.array;
+          var len = 10;
+                    
+          if (root == 0 || root == 4){
+                  return ((i - len < 0 || arr[i - len][j] !== 0) || (i + len > radius || arr[i + len][j] !== 0));            
+          } else if (root == 1 || root == 5) {
+                  return ((i - len < 0 || arr[i - len][j - len] !== 0) || 
+                                    (i + len > radius || arr[i + len][j + len] !== 0));
+          } else if (root == 2 || root == 6){
+                  return ((arr[i][j - len] !== 0) || (arr[i][j + len] !== 0));
+          } else {
+                  return ((i + len > radius || arr[i + len][j - len] !== 0) || (i - len < 0 || arr[i - len][j + len] !== 0));
+          }          
+        };
+                
+        return function (){
+                          
+          current = this.racer.current_speed_root;
+                              
+          if (current.s > 0){
+            // for move race            
+            rate_for_speed = current.s / 100;
+            
+            if (rate_for_speed > max_rate_for_speed){
+              rate_for_move = max_rate_for_speed;
+            } else {
+              rate_for_move = rate_for_speed;
+            }
+
+            move = this.sounds.play('fly_main');
+            this.sounds.setVolume(move, rate_for_speed);
+            
+            //for wall
+                        
+            if (ask_wall(this, current.r)){
+                                        
+              if (rate_for_speed > max_rate_wind){
+                rate_for_wind = max_rate_wind;   
+              } else {
+                rate_for_wind = rate_for_speed;   
+              }
+
+              move_near_wall = this.sounds.play('wind');
+              this.sounds.setVolume(move_near_wall, rate_for_wind);  
+            
+            } else {
+              
+              if (move_near_wall !== undefined){
+                this.sounds.stop(move_near_wall);
+              }
+            }
+            
+          } else {
+
+            if (move !== undefined){      
+              this.sounds.stop(move);
+            }
+            
+            if (move_near_wall !== undefined){
+              this.sounds.stop(move_near_wall);
+            }
+          }
+          
+          lengths_to_rivals = get_lengths_to_rivalsv(this);
+                    
+          if (lengths_to_rivals[0] && lengths_to_rivals[0] < 50){
+                        
+            rate_for_rival_1 = 1 / (lengths_to_rivals[0] * 1.5);
+            
+            console.log('rate', rate_for_rival_1, lengths_to_rivals[0]);  
+            
+            if (rate_for_rival_1 > max_rate_for_rivals){
+              rate_for_rival_1 = max_rate_for_rivals;
+            }
+            
+            rival_1 = this.sounds.play('fly_rival_1');
+            this.sounds.setVolume(rival_1, rate_for_rival_1);
+            
+          } else {
+            if (rival_1 !== undefined){
+              this.sounds.stop(rival_1);
+            }
+          }
+          
+          if (lengths_to_rivals[1] && lengths_to_rivals[1] < 50){
+                      
+            rate_for_rival_2 = 1 / (lengths_to_rivals[1] * 1.5);
+            
+            if (rate_for_rival_2 > max_rate_for_rivals){
+              rate_for_rival_2 = max_rate_for_rivals;
+            }
+
+            rival_2 = this.sounds.play('fly_rival_2');
+            this.sounds.setVolume(rival_2, rate_for_rival_2);
+
+          } else {
+            if (rival_2 !== undefined){
+              this.sounds.stop(rival_2);
+            }
+          }
+          
+        };
+      }()),
+      
       send_fly: function(){
         
         var obj = this.racer.fly;
@@ -1445,7 +1614,9 @@ var main = {
         this.menu.show = false;
         this.menu.sum_time = 0;
         this.menu.time = 0;
-
+        
+        this.crash.anim = false;
+        
         //log_trace.call(this);
         
         this.racer.del();
@@ -1502,8 +1673,11 @@ var main = {
         this.up.set_start_attr();                    
         this.up.steps.frames = 100;        
         
+        this.music = this.sounds.play('Games_Begin', true);
+        sounds.setVolume(this.music, this.params.volume_music);
+        
         for (count = 0; count < races.count; count++){ 
-          if (races.array[count].road === settings.road){
+          if (races.array[count].road === settings.road && this.rival.length < 3){
             this.rival.push(new CreateRacer(false, races.array[count]));
           }
         }
@@ -1560,6 +1734,7 @@ var main = {
         }
         
         if (racer.type == 'user'){
+          this.sounds.stop(this.music);
           this.status = 'end';      
         }      
       },
@@ -1794,6 +1969,10 @@ var main = {
             }
           }
         }            
+        
+        if (this.timer % 20 == 0){
+          this.set_sounds_for_racer();
+        }
         
         this.check_finish_racer();
 
@@ -2071,7 +2250,9 @@ var main = {
       game.field.finish.el.remove();
       
       create_field();
-              
+      
+      sounds.play
+      
       game.restart();
     };
     

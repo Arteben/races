@@ -18,13 +18,11 @@ var menu = {
                             
         var menu = document.getElementById('table_menu');
         var input_name = document.getElementById('input_name');
-        
+                
         var settings = {
             name: '',
             color: '',
             road: 0,
-            sounds: true,
-            call_menu: null,
         };
                 
         var cookie;
@@ -86,11 +84,12 @@ var menu = {
             
             var arr = [];
             var i;
+            var rand = (new Date()).getTime();
             
             xhr = new XMLHttpRequest(); 
                     
             try {
-              xhr.open("GET", 'data/races.json', false);                            
+              xhr.open("GET", 'data/races.json?cash='+ rand, false);                            
               xhr.send(null);
               
               races.array = [];
@@ -140,12 +139,15 @@ var menu = {
             }
                         
             botton_sound.onclick = function(){
+            
                 if (settings.sounds){
                     settings.sounds = false;
-                    botton_sound.value = 'Звук вкл!'
+                    app.sound.setMaster(0);
+                    botton_sound.value = 'Звук вкл!';
                 } else {
                     settings.sounds = true;
-                    botton_sound.value = 'Звук выкл.'
+                    app.sound.setMaster(1);
+                    botton_sound.value = 'Звук выкл.';
                 }           
             };
             
@@ -307,7 +309,7 @@ var menu = {
             
             switch(color){
                 case 0:
-                    settings.color = '66D';
+                    settings.color = '77D';
                     img_races[0].className += ' img_racer_choise'; 
                     name = names[0];
                     set_race = 0;

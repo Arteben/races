@@ -76,7 +76,7 @@
     <div id = "div_menu">
       <input type="button" tabindex="1" value="Рестарт"/>
       <input type="button" tabindex="2" value="Выйти в меню"/>
-      <input type="button" tabindex="2" value="Продолжить"/>    
+      <input type="button" tabindex="3" value="Продолжить"/>    
     </div>
 
     <div id="div_popup">
@@ -105,6 +105,8 @@
 
       //there is loading resorce
       create: function(){
+        
+        this.loadSounds('fly_main', 'fly_rival_1', 'fly_rival_2', 'Games_Begin', 'hit', 'wind', 'bip');
                 
         this._sizes_ = {
           w: window.innerWidth,
