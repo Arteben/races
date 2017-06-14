@@ -32,7 +32,7 @@ var menu = {
         }
         
         if (cookie === undefined){
-            set_race = Math.floor(Math.random() * 3); 
+            set_race = Math.floor(Math.random() * 3);
         } else {
             set_race = +cookie[0];
         }

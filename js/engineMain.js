@@ -24,8 +24,8 @@ var main = {
       get_size: function(){
         this.size = this.cell * this.radius;
       },
-      free_view: true,
-      renders_rivals: false,
+      free_view: false,
+      renders_rivals: true,
       volume_music: 0.3,
     };   
     
@@ -677,7 +677,7 @@ var main = {
         
         
         var glow = {
-          'stroke': this.fill,
+          'stroke': '#' + this.fill,
           'stroke-width': this.cell * 0.8,
           'stroke-linecap': 'butt',
           'stroke-linejoin': 'round',
@@ -693,8 +693,8 @@ var main = {
           fire: paper.path("").attr(fire), 
         };
 
-        this.point = paper.path('').attr({'fill': this.fill, 
-                  'stroke-width': this.cell * 0.1, 'stroke': this.border});
+        this.point = paper.path('').attr({'fill': '#' + this.fill, 
+                  'stroke-width': this.cell * 0.2, 'stroke': this.border});
       },         
       
       set_path: function(type, path, fire){
@@ -895,7 +895,7 @@ var main = {
       };
       
       this.name  = params.name;
-      this.fill = '#' + params.color;
+      this.fill = params.color;
       
       // for racer of control user
       if (user){
@@ -1271,7 +1271,7 @@ var main = {
         this.rnds.op = 1; 
         this.add_str = add / 2;
       
-        sounds.play('hit');
+        sounds.setVolume(sounds.play('hit'), 0.5);
         
       },
             
@@ -1413,9 +1413,9 @@ var main = {
         var rival_1;
         var rival_2;
         
-        var max_rate_for_speed = 0.05;
+        var max_rate_for_speed = 0.03;
         var max_rate_wind = 0.8;
-        var max_rate_for_rivals = 0.03;
+        var max_rate_for_rivals = 0.015;
         
         var lengths_to_rivals;
         
@@ -1494,7 +1494,7 @@ var main = {
                               
           if (current.s > 0){
             // for move race            
-            rate_for_speed = current.s / 100;
+            rate_for_speed = current.s / 200;
             
             if (rate_for_speed > max_rate_for_speed){
               rate_for_move = max_rate_for_speed;
@@ -1540,10 +1540,8 @@ var main = {
                     
           if (lengths_to_rivals[0] && lengths_to_rivals[0] < 50){
                         
-            rate_for_rival_1 = 1 / (lengths_to_rivals[0] * 1.5);
-            
-            console.log('rate', rate_for_rival_1, lengths_to_rivals[0]);  
-            
+            rate_for_rival_1 = 1 / (lengths_to_rivals[0] * 2);
+                        
             if (rate_for_rival_1 > max_rate_for_rivals){
               rate_for_rival_1 = max_rate_for_rivals;
             }
@@ -1559,7 +1557,7 @@ var main = {
           
           if (lengths_to_rivals[1] && lengths_to_rivals[1] < 50){
                       
-            rate_for_rival_2 = 1 / (lengths_to_rivals[1] * 1.5);
+            rate_for_rival_2 = 1 / (lengths_to_rivals[1] * 2);
             
             if (rate_for_rival_2 > max_rate_for_rivals){
               rate_for_rival_2 = max_rate_for_rivals;
@@ -1637,10 +1635,8 @@ var main = {
         this.menu.sum_time = 0;
         this.menu.time = 0;
         
-        this.crash.anim = false;
-        
-        //log_trace.call(this);
-        
+        this.hit.anim = false;
+                
         this.racer.del();
         
         this.rival.forEach(function(rival){
