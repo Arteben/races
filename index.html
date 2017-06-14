@@ -13,7 +13,7 @@
     <table id = "table_menu">
       <tr>
         <td colspan="3">
-          <input type="text" id = "input_name"   maxlength="50" autofocus tabindex="1"/>
+          <input type="text" id = "input_name" maxlength="50" autofocus tabindex="1"/>
         </td>
         <td colspan="3" rowspan="3" id="td_controls" >
           <div>
@@ -74,9 +74,9 @@
     </table>
 
     <div id = "div_menu">
-      <input type="button" tabindex="1" value="Рестарт"/>
-      <input type="button" tabindex="2" value="Выйти в меню"/>
-      <input type="button" tabindex="3" value="Продолжить"/>    
+      <input type="button" tabindex="3" value="Рестарт"/>
+      <input type="button" tabindex="4" value="Выйти в меню"/>
+      <input type="button" tabindex="5" value="Продолжить"/>    
     </div>
 
     <div id="div_popup">
@@ -87,8 +87,8 @@
       <div></div>
       <div>
         <span></span><br/><br/>
-        <input type="button" tabindex="1" value="Выйти в меню"/>
-        <input type="button" tabindex="2" value="Рестарт"/>
+        <input type="button" tabindex="6" value="Выйти в меню"/>
+        <input type="button" tabindex="7" value="Рестарт"/>
       </div>  
     </div>
     <script>
@@ -105,8 +105,20 @@
 
       //there is loading resorce
       create: function(){
+
+        var select_music;        
         
-        this.loadSounds('fly_main', 'fly_rival_1', 'fly_rival_2', 'Games_Begin', 'hit', 'wind', 'bip');
+        this.loadSounds('fly_main', 'fly_rival_1', 'fly_rival_2', 'hit', 'wind', 'bip');
+        
+        select_music = Math.floor(Math.random() * 2);
+        
+        if (select_music > 0){
+          this.loadSounds('alien_swamp');
+          this.sound.alias('music', 'alien_swamp', 1.0, 1.0);
+        } else {
+          this.loadSounds('Games_Begin');
+          this.sound.alias('music', 'Games_Begin', 1.0, 1.0);
+        } 
                 
         this._sizes_ = {
           w: window.innerWidth,

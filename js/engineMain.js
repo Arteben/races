@@ -16,21 +16,21 @@ var main = {
       radius: road.radius,
       indent_finish: 10,
       size: 0,
-      body: '#454545',
+      body: '#555',
       attr_road: {'stroke': '#000', 'stroke-width': 10, 'fill': road.fill},
-      attr_border: {'stroke': '#444', 'stroke-width': 100, 'stroke-linejoin': 'round'},
+      attr_border: {'stroke': '#444', 'stroke-width': 200, 'stroke-linejoin': 'round'},
       attr_finish: {'stroke': '#DD3', 'stroke-width': 15, 'stroke-linecap': 'round'},
       attr_boxes: {'stroke': '#000', 'stroke-width': 10, 'stroke-linejoin': 'round', 'fill': '#444'},
       get_size: function(){
         this.size = this.cell * this.radius;
       },
-      free_view: false,
-      renders_rivals: true,
+      free_view: true,
+      renders_rivals: false,
       volume_music: 0.3,
     };   
     
     var speed = 50;
-    
+    var frames_for_races = 1000 / speed;    
     // obj draw field
     var field = {            
       border: null,            
@@ -394,7 +394,7 @@ var main = {
         var point_up, point_down;
         var finish;
         var return_field;
-        var scale = 40;
+        var scale = 15;
         
         var boxes = '';
         var check_corner;
@@ -656,7 +656,7 @@ var main = {
       
       cell: road_params.cell,
                 
-      frames: 1000 / speed, 
+      frames: frames_for_races, 
         
       // remove racer from road 
       del: function(){
@@ -851,7 +851,7 @@ var main = {
         }
       },
 
-      set: (function(){
+      set_point: (function(){
         
         var xy;
         var params_view;
@@ -878,6 +878,67 @@ var main = {
           this.set_path('anim', '', '');
           this.set_path('full', 'L' + xy.x + ',' + xy.y);
                         
+        };
+      }()),
+    
+      set_viewBox: (function(){
+    
+        var w, h, x, y;
+        var older_level = 0;
+        var type_calcuts = 'qul';
+        var scale;
+        var add_scale = 1.2;
+        var frames = frames_for_races;
+        var svg = paper;
+        var s = sizes;
+        var level;
+        var multy = 0.4;
+        var no_view = road_params.free_view;
+        
+        return function (x_racer,  y_racer, count){        
+          
+          if (no_view){
+            return;
+          }
+          
+          if (this.current_speed_root.s == 0){
+            older_level = 0;
+          }
+                                        
+          level = Math.floor(this.current_speed_root.s / 10);
+    
+          if (count === 1){ 
+            if (level > older_level){
+              type_calcuts = 'up';
+            } else if (level < older_level) {                  
+              type_calcuts = 'down';
+            } else {
+              type_calcuts = 'qul';
+            }
+            
+            older_level = level;
+          }
+                          
+          switch(type_calcuts){
+            case 'up':
+              scale = (older_level - 1 + (1 / frames * count)) * multy;
+            break;
+            case 'down':
+              scale = (older_level + 1 - (1 / frames * count)) * multy;
+            break;
+            case 'qul':
+              scale = older_level * multy;
+            break
+          }
+                           
+          scale += add_scale;
+          
+          w = s.w * scale;
+          h = s.h * scale;
+          x = x_racer - w / 2;              
+          y = y_racer - h / 2;
+          
+          svg.setViewBox(x, y, w, h);                              
         };
       }()),
     };
@@ -909,7 +970,6 @@ var main = {
             y: 0,
           },
           viewBox: {
-            set: false,
             x: 0,
             y: 0,
             count: 0,
@@ -940,68 +1000,6 @@ var main = {
           s: this.speed,
           r: this.root,
         };
-        
-        this.set_viewBox = (function(){
-      
-          var w, h, x, y;
-          var older_level = 0;
-          var type_calcuts = 'qul';
-          var scale;
-          var add_scale = 1;
-          var frames = proto_racers.frames;
-          var svg = paper;
-          var s = sizes;
-          var level;
-          var multy = 0.3;
-          var no_view = road_params.free_view;
-          
-          return function (x_racer,  y_racer, count){        
-            
-            if (no_view){
-              return;
-            }
-            
-            if (this.current_speed_root.s == 0){
-              older_level = 0;
-            }
-                                          
-            level = Math.floor(this.current_speed_root.s / 3);
-      
-            if (count === 1){ 
-              if (level > older_level){
-                type_calcuts = 'up';
-              } else if (level < older_level) {                  
-                type_calcuts = 'down';
-              } else {
-                type_calcuts = 'qul';
-              }
-              
-              older_level = level;
-            }
-                            
-            switch(type_calcuts){
-              case 'up':
-                scale = (older_level - 1 + (1 / frames * count)) * multy;
-              break;
-              case 'down':
-                scale = (older_level + 1 - (1 / frames * count)) * multy;
-              break;
-              case 'qul':
-                scale = older_level * multy;
-              break
-            }
-                             
-            scale += add_scale;
-            
-            w = s.w * scale;
-            h = s.h * scale;
-            x = x_racer - w / 2;              
-            y = y_racer - h / 2;
-            
-            svg.setViewBox(x, y, w, h);                              
-          };
-        }());
-        
       } else {
        
         this.border = "#000";
@@ -1057,7 +1055,7 @@ var main = {
       this.path_anim = null;
         
       this.create();
-      this.set(this.start.i, this.start.j);
+      this.set_point(this.start.i, this.start.j);
     };      
                         
     var popup = {
@@ -1117,7 +1115,7 @@ var main = {
             this.set_visibility(persents / 100);
             
             if (persents == 90){
-              sounds.setVolume(sounds.play('bip', false), 1);
+              sounds.setVolume(sounds.play('bip', false), 0.5);
             }
 
           } else {
@@ -1140,6 +1138,8 @@ var main = {
         this.el.style.display = "block";
         this.el.style.left = (sizes.w - this.el.clientWidth) / 2;
         this.el.style.top = (sizes.h - this.el.clientHeight) / 2;
+        
+        this.el.getElementsByTagName('input')[0].focus();
       },
       
       to_hide: function(){
@@ -1152,7 +1152,10 @@ var main = {
         
         bottons[0].onclick = function(){
           popup_finish.to_hide();
+          
           sounds.stop(game.music);
+          game.music = undefined;
+          
           app._call_menu_(true);
         },
         
@@ -1219,6 +1222,7 @@ var main = {
         bottons[1].onclick = function(){
           menu.to_hide();
           sounds.stop(game.music);
+          game.music = undefined;
           app._call_menu_()
         };
         
@@ -1232,6 +1236,8 @@ var main = {
         this.show = true;
         this.set_sizes();
         this.time = (new Date()).getTime();
+        
+        this.el.getElementsByTagName('input')[0].focus();
       },
       
       to_hide: function(){
@@ -1301,7 +1307,7 @@ var main = {
     // controls the game
     var game = {
       sounds: sounds,
-      music: null,
+      music: undefined,
       hit: crash,
       menu: menu,
       params: road_params,
@@ -1323,15 +1329,13 @@ var main = {
         clear_all: function(){
         
           this.right = false;
-          this.del_right = false;
           this.left = false;
-          this.del_left = false;
           this.up = false;
           this.del_up = false;
           this.down = false;
           this.del_down = false;
         },
-        set: function(key){
+        set_key: function(key){
           switch(key){
             case 'up':
               this.up = true;
@@ -1413,9 +1417,12 @@ var main = {
         var rival_1;
         var rival_2;
         
-        var max_rate_for_speed = 0.03;
-        var max_rate_wind = 0.8;
-        var max_rate_for_rivals = 0.015;
+        var max_rate_for_speed = 0.01;
+        var max_rate_wind = 0.5;
+        var max_rate_for_rivals = 0.005;
+        
+        var indent_move_rate = 100;
+        var indent_wind_rate = 5;
         
         var lengths_to_rivals;
         
@@ -1494,27 +1501,32 @@ var main = {
                               
           if (current.s > 0){
             // for move race            
-            rate_for_speed = current.s / 200;
-            
-            if (rate_for_speed > max_rate_for_speed){
-              rate_for_move = max_rate_for_speed;
+            rate_for_speed = current.s / 100; 
+                        
+                        
+                        
+            if (rate_for_speed / indent_move_rate > max_rate_for_speed){
+              rate_for_move = max_rate_for_speed / indent_move_rate;
             } else {
-              rate_for_move = rate_for_speed;
+              rate_for_move = rate_for_speed / indent_move_rate;
             }
-
-            move = this.sounds.play('fly_main');
-            this.sounds.setVolume(move, rate_for_speed);
+            
+            if (move === undefined){
+              move = this.sounds.play('fly_main', true);
+            }
+            
+            this.sounds.setVolume(move, rate_for_move);
             
             //for wall
                         
             if (ask_wall(this, current.r)){
                                         
-              if (rate_for_speed > max_rate_wind){
-                rate_for_wind = max_rate_wind;   
+              if (rate_for_speed / indent_wind_rate > max_rate_wind){
+                rate_for_wind = max_rate_wind / indent_wind_rate;   
               } else {
-                rate_for_wind = rate_for_speed;   
+                rate_for_wind = rate_for_speed / indent_wind_rate;   
               }
-
+              
               move_near_wall = this.sounds.play('wind');
               this.sounds.setVolume(move_near_wall, rate_for_wind);  
             
@@ -1529,6 +1541,7 @@ var main = {
 
             if (move !== undefined){      
               this.sounds.stop(move);
+              move = undefined;
             }
             
             if (move_near_wall !== undefined){
@@ -1540,35 +1553,43 @@ var main = {
                     
           if (lengths_to_rivals[0] && lengths_to_rivals[0] < 50){
                         
-            rate_for_rival_1 = 1 / (lengths_to_rivals[0] * 2);
+            rate_for_rival_1 = 1 / (lengths_to_rivals[0] * 20);
                         
             if (rate_for_rival_1 > max_rate_for_rivals){
               rate_for_rival_1 = max_rate_for_rivals;
             }
             
-            rival_1 = this.sounds.play('fly_rival_1');
+            if (rival_1 === undefined){
+              rival_1 = this.sounds.play('fly_rival_1', true);
+            }
+            
             this.sounds.setVolume(rival_1, rate_for_rival_1);
             
           } else {
             if (rival_1 !== undefined){
               this.sounds.stop(rival_1);
+              rival_1 = undefined;
             }
           }
           
           if (lengths_to_rivals[1] && lengths_to_rivals[1] < 50){
                       
-            rate_for_rival_2 = 1 / (lengths_to_rivals[1] * 2);
+            rate_for_rival_2 = 1 / (lengths_to_rivals[1] * 20);
             
             if (rate_for_rival_2 > max_rate_for_rivals){
               rate_for_rival_2 = max_rate_for_rivals;
             }
-
-            rival_2 = this.sounds.play('fly_rival_2');
+            
+            if (rival_2 === undefined){
+              rival_2 = this.sounds.play('fly_rival_2', true);
+            }
+            
             this.sounds.setVolume(rival_2, rate_for_rival_2);
 
           } else {
             if (rival_2 !== undefined){
               this.sounds.stop(rival_2);
+              rival_2 = undefined;
             }
           }
           
@@ -1690,10 +1711,13 @@ var main = {
             
         this.up.set_start_attr();                    
         this.up.steps.frames = 100;        
+                
+        if (this.music === undefined){
+          this.music = this.sounds.play('music', true);
+        }
         
-        this.music = this.sounds.play('Games_Begin', true);
-        sounds.setVolume(this.music, this.params.volume_music);
-        
+        sounds.setVolume(this.music, this.params.volume_music); 
+               
         for (count = 0; count < races.count; count++){ 
           if (races.array[count].road === settings.road && this.rival.length < 3){
             this.rival.push(new CreateRacer(false, races.array[count]));
@@ -1969,21 +1993,23 @@ var main = {
 
       // calcuts x, y for next frame rendering racer  
       steps_for_racer: function(){
-                                  
-        if (this.racer.steps.cycle){
+        
+        var racer = this.racer;
+                                        
+        if (racer.steps.cycle){
           this.set_renders_racer_rival(this.racer);
         }
         
         // start calcuts params for render if it is needs
-        if (this.racer.steps.count == 0){
+        if (racer.steps.count == 0){
           
-          this.key_check_for_racer();
+          this.check_up_down_for_racer();
           
-          if(this.racer.speed > 0){
-            this.racer_go(this.racer);
+          if(racer.speed > 0){
+            this.racer_go(racer);
           } else {
-            if (this.racer.steps.cycle){
-              this.racer.steps.cycle = false;
+            if (racer.steps.cycle){
+              racer.steps.cycle = false;
             }
           }
         }            
@@ -1996,36 +2022,36 @@ var main = {
 
         if (this.status == 'end'){
                     
-          this.racer.fly.push({
-            s: this.racer.current_speed_root.s,
-            r: this.racer.current_speed_root.r,
-            i: this.racer.steps.goal.i,
-            j: this.racer.steps.goal.j,
+          racer.fly.push({
+            s: racer.current_speed_root.s,
+            r: racer.current_speed_root.r,
+            i: racer.steps.goal.i,
+            j: racer.steps.goal.j,
             time: this.timer,
-            human_time: this.racer.human_time,
+            human_time: racer.human_time,
             millis: this.get_human_time(true), 
-            start_i: this.racer.start.i,
-            start_j: this.racer.start.j,
+            start_i: racer.start.i,
+            start_j: racer.start.j,
             road: settings.road,
-            name: this.racer.name,
-            color: this.racer.fill,
+            name: racer.name,
+            color: racer.fill,
           });              
         } else {
-          if (this.racer.steps.count == 0){
-            if (this.racer.speed > 0){
-              this.racer.fly.push({
-                s: this.racer.speed,
-                r: this.racer.root,
-                i: this.racer.coord.i,
-                j: this.racer.coord.j,
+          if (racer.steps.count == 0){
+            if (racer.speed > 0){
+              racer.fly.push({
+                s: racer.speed,
+                r: racer.root,
+                i: racer.coord.i,
+                j: racer.coord.j,
                 wait: 0,
               });
             } else {
                                         
-              if (this.racer.fly[this.racer.fly.length - 1].s === 0){
-                this.racer.fly[this.racer.fly.length - 1].wait++;
+              if (racer.fly[racer.fly.length - 1].s === 0){
+                racer.fly[racer.fly.length - 1].wait++;
               } else {
-                this.racer.fly.push({s: 0, wait: 0, i: this.racer.coord.i, j: this.racer.coord.j});
+                racer.fly.push({s: 0, wait: 0, i: racer.coord.i, j: racer.coord.j});
               }
             }
           }
@@ -2096,7 +2122,7 @@ var main = {
           racer.coord.x = racer.steps.goal.x;
           racer.coord.y = racer.steps.goal.y;
                         
-          racer.set(racer.steps.goal.i, racer.steps.goal.j);
+          racer.set_point(racer.steps.goal.i, racer.steps.goal.j);
         }          
       },
 
@@ -2200,43 +2226,57 @@ var main = {
         rival.set_path('anim', rival.renders.path, rival.renders.fire); 
                               
       },
-
-      key_check_for_racer: function(){
+      
+      check_up_down_for_racer: function(){
+      
+        var racer = this.racer;
+        var current = this.racer.current_speed_root;
         
         if (this.racer_keypress.up){
-          if (this.racer.speed < 100 && this.racer.current_speed_root.s >= this.racer.speed){
-            this.racer.speed++;
-          }
+          if (racer.speed < 100 && current.s >= racer.speed){
+            if (racer.speed < 5){
+              racer.speed++;
+            } else {
+              racer.speed += 3;
+            }
+          }          
         }
         
         if (this.racer_keypress.down){
-          if (this.racer.speed > 0 && this.racer.current_speed_root.s <= this.racer.speed){
-            if (this.racer.speed > 3){
-              this.racer.speed -= 3;
+          if (racer.speed > 0 && current.s <= racer.speed){
+            if (racer.speed > 10){
+              racer.speed -= 10;
             } else {
-              this.racer.speed = 0;
+              racer.speed = 0;
             }
           }
         }
         
+        this.racer_keypress.del();
+              
+      },
+      
+      check_right_left_for_racer: function(){
+            
+        var racer = this.racer;
+        var current = this.racer.current_speed_root;
+        
         if (this.racer_keypress.right){
-          if (this.racer.current_speed_root.r == 7 && this.racer.root == 7){
-            this.racer.root = 0;
-          } else if (this.racer.current_speed_root.r < 7 && this.racer.current_speed_root.r >= this.racer.root){
-            this.racer.root++;
+          if (current.r == 7 && racer.root == 7){
+            racer.root = 0;
+          } else if (current.r < 7 && current.r >= racer.root){
+            racer.root++;
           }
         }
           
         if (this.racer_keypress.left){
-          if (this.racer.current_speed_root.r == 0 && this.racer.root == 0){
-            this.racer.root = 7;
-          } else if (this.racer.current_speed_root.r > 0 && this.racer.current_speed_root.r <= this.racer.root){
-            this.racer.root--;
+          if (current.r == 0 && racer.root == 0){
+            racer.root = 7;
+          } else if (current.r > 0 && current.r <= racer.root){
+            racer.root--;
           }
         }
         
-        this.racer_keypress.del();
-
       },
     };
     
@@ -2268,9 +2308,7 @@ var main = {
       game.field.finish.el.remove();
       
       create_field();
-      
-      sounds.play
-      
+            
       game.restart();
     };
     
@@ -2283,8 +2321,10 @@ var main = {
           gm.steps_start();
         break;
         case 'main':
-          gm.timer++;
           if (!gm.menu.show){
+          
+            gm.timer++;
+            
             gm.steps_for_racer();
             
             if (gm.params.renders_rivals){
@@ -2371,8 +2411,12 @@ var main = {
             }
           }
           
-          gm.racer_keypress.set(data.key);
-
+          gm.racer_keypress.set_key(data.key);
+          
+          if (data.key == 'right' || data.key == 'left'){
+            gm.check_right_left_for_racer();
+          }
+          
         break;
         case 'end':
           //gm.restart();
