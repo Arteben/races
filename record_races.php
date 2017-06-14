@@ -30,66 +30,67 @@ var races = [];
     
   $racer_take = json_decode($raw_sting, true);
   
-  if (count($racer_take) > 0){
+  if (count($racer_take) <  10){
+    echo 'error 1, неверный формат данных!';
+    die();
+  }
+          
+  if (isset($racer_take[count($racer_take) - 1]['time']) && 
+              isset($racer_take[count($racer_take) - 1]['road'])){
     
-    $races_file = json_decode($file, true);
-      
-    if (count($races_file) > 0){
-      
-      if (isset($racer_take[count($racer_take) - 1]['time']) && 
-                  isset($racer_take[count($racer_take) - 1]['road'])){
-        $time_racer = (int) $racer_take[count($racer_take) - 1]['time'];
-        $road_racer = (int) $racer_take[count($racer_take) - 1]['road'];
-      } else {
-        echo 'error 1!';
-        die();
-      }
+    $time_racer =  $racer_take[count($racer_take) - 1]['time'];
+    $road_racer =  $racer_take[count($racer_take) - 1]['road'];
+  
+  } else {
+  
+    echo 'error 2, неверный формат данных';
+    die();
+  
+  }
+  
+  $races_file = json_decode($file, true);
+
+  if (count($races_file) == 0){
+    record_racer($races_file, $racer_take, $path);
+    die();
+  }
+  
+  $races_for_road = array();
+  $racer_from_file = array();
+  
+  $check_time = 0;
+  
+  foreach($races_file as $key => $racer_from_file){
+    
+    if ($racer_from_file['road'] == $road_racer){
             
-      $races_for_road = array();
-      $racer_from_file = array();
-      $count = 0;
-    
-      foreach($races_file as $key => $racer_from_file){
-        
-        if ((int) $racer_from_file['road'] == $road_racer){
-          
-          $count++;
-          
-          $races_for_road []= $key;
-          
-          if ($count > 1){
-            break;
-          }
-        }
-      }
-                
-      $check_time = ( (!$races_for_road[0] || (int) $races_file[$races_for_road[0]]['time'] > $time_racer) ||
-                  (!$races_for_road[1] || (int) $races_file[$races_for_road[1]]['time'] > $time_racer));
-                   
-      if ($check_time && $time_racer > 0){
-        
-        if (count($races_for_road) > 1){
-          if ($races_file[$races_for_road[0]]['time'] < $races_file[$races_for_road[1]]['time']){
-            unset($races_file[$races_for_road[1]]);
-          } else {
-            unset($races_file[$races_for_road[0]]);        
-          }
-        }
-        
-        record_racer($races_file, $racer_take, $path);        
+      $races_for_road []= $key;
       
-      } else {
-        echo 'error 2!';
-        die();
+      if ($racer_from_file['time'] > $time_racer){
+        $check_time++;
       }
-    } else {
+      
+      if (count($races_for_road) > 1){
+        break;
+      }
+    }
+  }
+  
+  if ($time_racer > 0 && $check_time > 0){
     
-      record_racer($races_file, $racer_take, $path);
+    if (count($races_for_road) > 1){
+      if ($races_file[$races_for_road[0]]['time'] < $races_file[$races_for_road[1]]['time']){
+        unset($races_file[$races_for_road[1]]);
+      } else {
+        unset($races_file[$races_for_road[0]]);        
+      }
     }
     
+    record_racer($races_file, $racer_take, $path);        
+  
   } else {
-    echo  'error 3!';
-    die();  
+    echo 'errr 3! неверный формат данных!';
+    die();
   }
 
 function record_racer($json, $racer, $p){
@@ -105,14 +106,18 @@ function record_racer($json, $racer, $p){
     $fly = array();
     
     foreach($racer as $fly){
-      $array_racer['array'] []= $fly;
+      $array_racer['array'] []= array(  's' => (int) $fly['s'],
+                                        'r' => (int) $fly['r'],
+                                        'wait' => (int) $fly['wait'],
+                                        'i' => (int) $fly['i'],
+                                        'j' => (int) $fly['j']);
     }    
     
     //echo 'what is it? '.data_racer[0];
     
-    $array_racer['color'] = $data_racer['color'];
-    $array_racer ['name'] = $data_racer['name'];
-    $array_racer ['human_time'] =  $data_racer['human_time'];
+    $array_racer['color'] = htmlspecialchars(substr($data_racer['color'], 0, 3));
+    $array_racer ['name'] = htmlspecialchars(substr($data_racer['name'], 0, 20));
+    $array_racer ['human_time'] =  htmlspecialchars(substr($data_racer['human_time'], 0, 5));
 
     $array_racer ['road'] = (int) $data_racer['road'];
     $array_racer ['time'] = (int) $data_racer['time'];
@@ -120,11 +125,10 @@ function record_racer($json, $racer, $p){
     $array_racer ['j'] = (int) $data_racer['start_j'];
     $array_racer ['millis'] = (int) $data_racer['millis'];
 
-    
     $json []= $array_racer;
     
     if (file_put_contents($p, json_encode($json))){
-      echo 'Рузультат сохранен!';
+      echo 'Результат сохранен!';
     }
   }
 ?>

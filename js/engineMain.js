@@ -26,7 +26,7 @@ var main = {
       },
       free_view: false,
       renders_rivals: true,
-      volume_music: 0.3,
+      volume_music: 0.5,
     };   
     
     var speed = 50;
