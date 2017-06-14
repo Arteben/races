@@ -16,7 +16,7 @@ var main = {
       radius: road.radius,
       indent_finish: 10,
       size: 0,
-      body: '#333',
+      body: '#454545',
       attr_road: {'stroke': '#000', 'stroke-width': 10, 'fill': road.fill},
       attr_border: {'stroke': '#444', 'stroke-width': 100, 'stroke-linejoin': 'round'},
       attr_finish: {'stroke': '#DD3', 'stroke-width': 15, 'stroke-linecap': 'round'},
@@ -394,7 +394,7 @@ var main = {
         var point_up, point_down;
         var finish;
         var return_field;
-        var scale = 20;
+        var scale = 40;
         
         var boxes = '';
         var check_corner;
@@ -1424,20 +1424,42 @@ var main = {
           var racer_i = the.racer.coord.i;
           var racer_j = the.racer.coord.j;
           
-          var rival_1_i = the.rival[0].coord.i;
-          var rival_1_j = the.rival[0].coord.j;
-          var rival_2_i = the.rival[1].coord.i;
-          var rival_2_j = the.rival[1].coord.j;
+          var rival_1_i;
+          var rival_1_j;
+          var rival_2_i;
+          var rival_2_j;
+
           
-          var length_1 = Math.abs(racer_i - rival_1_i) + Math.abs(racer_j - rival_1_j);
-          var length_2 = Math.abs(racer_i - rival_2_i) + Math.abs(racer_j - rival_2_j);
+          var length_1;
+          var length_2;
           
-          if (length_1 <= 0){
-            length_1 = 0;
-          }
+          if (the.rival[0] === undefined){
+            length_1 = null;
+          } else {
+            rival_1_i = the.rival[0].coord.i;
+            rival_1_j = the.rival[0].coord.j;
+            
+            length_1 = Math.abs(racer_i - rival_1_i) + Math.abs(racer_j - rival_1_j);
+            
+            if (length_1 <= 0){
+              length_1 = 0;
+            }          
+          } 
           
-          if (length_2 <= 0){
-            length_2 = 0;
+          if (the.rival[1] === undefined){
+            length_2 = null;          
+          } else {
+          
+            rival_2_i = the.rival[1].coord.i;
+            rival_2_j = the.rival[1].coord.j;
+            
+            length_2 = Math.abs(racer_i - rival_2_i) + Math.abs(racer_j - rival_2_j);
+            
+            
+            if (length_2 <= 0){
+              length_2 = 0;
+            }
+            
           }
           
           return [
