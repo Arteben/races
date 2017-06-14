@@ -24,8 +24,8 @@ var main = {
       get_size: function(){
         this.size = this.cell * this.radius;
       },
-      free_view: true,
-      renders_rivals: false,
+      free_view: false,
+      renders_rivals: true,
       volume_music: 0.3,
     };   
     
