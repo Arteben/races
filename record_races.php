@@ -129,12 +129,21 @@ function record_racer($array_json, $racer, $p){
     } else {
       $name = $data_racer['name'];
     }
+    
+    if (strlen($name) == 0){
+      echo 'Извините, но у вас нет имени!';
+      die();
+    }
         
     $color = substr($data_racer['color'], 0, 3);
     
+    if (strlen($color) != 3){
+      echo  ' error 7, неверный формат данных!';
+      die();
+    }
+    
     $human_time = substr($data_racer['human_time'], 0, 5);
-    
-    
+        
     $array_racer['color'] = htmlspecialchars($color, ENT_QUOTES, 'UTF-8');
         
     $array_racer ['name'] =  htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
