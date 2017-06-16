@@ -85,7 +85,7 @@
 
   }
 
-function record_racer($json, $racer, $p){
+function record_racer($array_json, $racer, $p){
     
     $array_racer = array();
     
@@ -124,11 +124,23 @@ function record_racer($json, $racer, $p){
     
     //echo 'what is it? '.data_racer[0];
     
-    $array_racer['color'] = substr(htmlspecialchars($data_racer['color'], ENT_QUOTES, 'UTF-8'), 0, 3);
+    if (strlen($data_racer['name'] > 20)){
+      $name = substr($data_racer['name'], 0, 20);
+    } else {
+      $name = $data_racer['name'];
+    }
         
-    $array_racer ['name'] =  substr(htmlspecialchars($data_racer['name'], ENT_QUOTES, 'UTF-8'), 0, 30);
+    $color = substr($data_racer['color'], 0, 3);
     
-    $array_racer ['human_time'] =  substr(htmlspecialchars($data_racer['human_time'], ENT_QUOTES, 'UTF-8'), 0, 5);
+    $human_time = substr($data_racer['human_time'], 0, 5);
+    
+    
+    $array_racer['color'] = htmlspecialchars($color, ENT_QUOTES, 'UTF-8');
+        
+    $array_racer ['name'] =  htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+    
+    $array_racer ['human_time'] =  htmlspecialchars($human_time, ENT_QUOTES, 'UTF-8');
+
 
     $array_racer ['road'] = (int) $data_racer['road'];
     
@@ -140,21 +152,25 @@ function record_racer($json, $racer, $p){
     
     $array_racer ['millis'] = (int) $data_racer['millis'];
 
-    $json []= $array_racer;
+    $array_json []= $array_racer;
+        
+    $out_json = json_encode($array_json);
     
-    if (count($json) > 0){
+    if (strlen($out_json) > 0){
     
-      if (file_put_contents($p, json_encode($json))){
+      if (file_put_contents($p, $out_json)){
         echo 'Результат сохранен!';
         die();
       } else {
         echo 'error 4, Ошибка записи!';
         die();
       }
-      
+
     } else {
-      echo 'erro 5, нет массива';
-      die(); 
+    
+      echo 'erro 5, ошибка записи!';
+      die();
+    
     }
   }
 ?>

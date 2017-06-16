@@ -244,15 +244,14 @@ var menu = {
             
             var i, j, count;
             var one_map;
-            var tr_1_in_dom, tr_2_in_dom;
-            var tr_1, tr_2;
+            var tr_1_in_dom;
+            var tr_1;
             
             var collection = document.getElementById('td_maps_collection');
             var div = collection.getElementsByTagName('div')[0];
             
             var one_map_in_dom = document.getElementsByClassName('table_maps')[0];
             var tr_1_in_dom = one_map_in_dom.getElementsByTagName('tr')[0];
-            var tr_2_in_dom = one_map_in_dom.getElementsByTagName('tr')[1];
             
             var name;
             var show_races;
@@ -274,13 +273,7 @@ var menu = {
                 for(count = 0; count < tr_1_in_dom.getElementsByTagName('td').length; count++){
                     tr_1.appendChild(tr_1_in_dom.getElementsByTagName('td')[count].cloneNode());
                 }
-                
-                tr_2 = one_map.getElementsByTagName('tr')[1];
-                
-                for (count = 0; count < tr_2_in_dom.getElementsByTagName('td').length; count++){
-                    tr_2.appendChild(tr_2_in_dom.getElementsByTagName('td')[count].cloneNode());
-                }
-                
+                                
                 name = roads[i].name;
                 
                 show_races = [];
@@ -299,7 +292,6 @@ var menu = {
                                 
                 if (show_races.length > 0){
                     tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
-                    tr_2.getElementsByTagName('td')[0].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
                 }
                 
                 one_map.style.display = 'block';
