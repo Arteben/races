@@ -14,6 +14,8 @@ var menu = {
             array: [],
         };
         
+        var reces_for_menu;
+        
         app._races_ = races;
                             
         var menu = document.getElementById('table_menu');
@@ -49,17 +51,19 @@ var menu = {
             var collection;
             var i;
             var tables
-        
+            var div;
+            
             if (maps){
             
                 collection = document.getElementById('td_maps_collection');
+                div = collection.getElementsByTagName('div')[0];
                 tables = collection.getElementsByClassName('table_maps');
-                                
+                
                 for (i = tables.length - 1; i >= 0; i--){
-                    collection.removeChild(tables[i]);
+                    div.removeChild(tables[i]);
                 }
                                 
-                get_races();
+                get_races_for_menu();
                 
                 get_maps();
             }
@@ -74,22 +78,53 @@ var menu = {
 
         set_choise_races(set_race); 
 
-        get_races();
-
+        //get_races();
+        
+        get_races_for_menu();
+        
         get_maps();
         
         ready_menu();
-
-        function get_races(){
+        
+        function get_races_for_menu(){        
             
             var arr = [];
             var i;
             var rand = (new Date()).getTime();
             
+            races_for_menu = [];
+            
             xhr = new XMLHttpRequest(); 
                     
             try {
-              xhr.open("GET", 'data/races.json?cash='+ rand, false);                            
+              xhr.open("GET", 'get_races_for_menu.php?nocache=' + rand, false);                            
+              
+              xhr.send(null);
+                            
+              if (xhr.responseText == ''){
+                races.count = 0;
+              } else {
+                
+                arr = JSON.parse(xhr.responseText)
+              }
+            } catch (e) {
+              console.log('settings error in get_racer_for_menu!', xhr.readyState);
+            }
+                
+            for (i in arr){
+                races_for_menu.push(arr[i]);
+            }
+        }
+        
+        function get_races(){
+            
+            var arr = [];
+            var i;
+                        
+            xhr = new XMLHttpRequest(); 
+                    
+            try {
+              xhr.open("GET", 'get_races_for_road.php?numroad='+ settings.road, false);                            
               xhr.send(null);
               
               races.array = [];
@@ -108,7 +143,7 @@ var menu = {
                 races.array.push(arr[i]);
             }
             
-            races.count = races.array.length;
+            races.count = races.array.length;            
         }
                 
         function ready_menu(){
@@ -169,7 +204,9 @@ var menu = {
                         
             the.app._settings_ = settings;
             menu.style.display = 'none';
-                                     
+            
+            get_races();
+            
             if (the.app._call_game_){
                 the.app._call_game_();
             }
@@ -211,6 +248,7 @@ var menu = {
             var tr_1, tr_2;
             
             var collection = document.getElementById('td_maps_collection');
+            var div = collection.getElementsByTagName('div')[0];
             
             var one_map_in_dom = document.getElementsByClassName('table_maps')[0];
             var tr_1_in_dom = one_map_in_dom.getElementsByTagName('tr')[0];
@@ -247,32 +285,21 @@ var menu = {
                 
                 show_races = [];
                                 
-                for (j = 0; j < races.count; j++){
+                for (j = 0; j < races_for_menu.length; j++){
                     
-                    if (races.array[j].road == i){
+                    if (races_for_menu[j].road == i){
                         show_races.push({
-                            human_time: races.array[j].human_time,
-                            name: races.array[j].name,
-                            time: races.array[j].time,
+                            human_time: races_for_menu[j].human_time,
+                            name: races_for_menu[j].name,
                         });                        
                     }
                 }
-                             
-                                                                        
+                                                                                                     
                 tr_1.getElementsByTagName('td')[0].innerHTML += name;
-
+                                
                 if (show_races.length > 0){
-                    if (show_races.length > 1){
-                        if (show_races[0].time < show_races[1].time){
-                            tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
-                            tr_2.getElementsByTagName('td')[0].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
-                        } else {
-                            tr_1.getElementsByTagName('td')[1].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
-                            tr_2.getElementsByTagName('td')[0].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;                
-                        }
-                    } else {
-                        tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
-                    }
+                    tr_1.getElementsByTagName('td')[1].innerHTML += show_races[0].name + ' ' + show_races[0].human_time;
+                    tr_2.getElementsByTagName('td')[0].innerHTML += show_races[1].name + ' ' + show_races[1].human_time;
                 }
                 
                 one_map.style.display = 'block';
@@ -286,10 +313,9 @@ var menu = {
                     };
                 
                 }());
-                
-                collection.appendChild(one_map);
+                                
+                div.appendChild(one_map);
             }
-            
         }
         
         function set_choise_races(color){
@@ -301,6 +327,10 @@ var menu = {
                 'Синий гонщик',
                 'Красный гонщик',
                 'Зеленый гонщик',
+                'Бирюзовый гонщик',
+                'Желтый гонщик',
+                'Черный гонщик',
+                '',
             ];
             
             for(i = 0; i < img_races.length; i++){
@@ -326,12 +356,37 @@ var menu = {
                     name = names[2];
                     set_race = 2;
                 break;
+                case 3:
+                    settings.color = '6DD';
+                    img_races[3].className += ' img_racer_choise'; 
+                    name = names[3];
+                    set_race = 3;
+                break;
+                case 4:
+                    settings.color = 'FF6';
+                    img_races[4].className += ' img_racer_choise'; 
+                    name = names[4];
+                    set_race = 4;
+                break;
+                case 5:
+                    settings.color = '000';
+                    img_races[5].className += ' img_racer_choise'; 
+                    name = names[5];
+                    set_race = 5;
+                break;
             }
             
             value = input_name.value;
             
-            if (value == names[0] || value == names[1] || value == names[2] || value == ''){
-                input_name.value = name;
+            for (i = 0; i < names.length; i++){
+
+                if (value == names[i]){
+                
+                    input_name.value = name;
+                    break;
+                
+                }
+                
             }
         }
      },

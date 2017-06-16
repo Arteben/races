@@ -72,7 +72,6 @@ INPUT:hover {
 
 .choise_maps_name {
   width: 150px;
-  overflow: auto;
   font-size: 14px;
   padding: 3px;
   border-right: 2px solid #DDD;
@@ -85,8 +84,10 @@ INPUT:hover {
 
 .choise_maps_user_2 {
   padding: 3px;
-  font-size: 10px;
+  font-size: 8px;
 }
+
+
 
 #td_controls{
   text-align: left;
@@ -106,8 +107,8 @@ a {
   text-weight: bold;    
 }
 
-#td_maps_collection {
-  height: 210px;
+#td_maps_collection div {
+  height: 150px;
   overflow-y: auto;
 }
 
