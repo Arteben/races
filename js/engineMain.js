@@ -1029,7 +1029,9 @@ var main = {
         this.time = params.time;
         this.human_time = params.human_time;
         
-        this.type = 'rival'; 
+        this.type = 'rival';
+        
+        this.write_wins = false; 
       }        
       
       this.coord = {
@@ -2187,8 +2189,10 @@ var main = {
         };
         
         var rend_for_rival = function(rival){ 
-                                              
-          if (rival.fly.length > rival.steps.num + 1){
+                    
+          var fly_length = rival.fly.length;
+                                                        
+          if (fly_length > rival.steps.num + 1){
             
             if ( rival.fly[rival.steps.num].wait > 0 && 
                     rival.fly[rival.steps.num].wait > rival.steps.wait){
@@ -2220,18 +2224,23 @@ var main = {
                 rival.steps.wait = 0;
               }
             }
+  
           } else {
-            this.set_renders_racer_rival(rival);
+
+            if (rival.write_wins){
+              rival.renders.status = false;
+              rival.steps.cycle = false;
+            } 
+
           }
           
-          if (this.timer >= rival.time){
+          if (this.timer >= rival.time && !rival.write_wins){
             
-            rival.renders.status = false;
-            rival.steps.cycle = false;
+            console.log('reeead! wins', rival.write_wins);
             
+            rival.write_wins = true;
             this.finish_game(rival);
-                  
-            return;
+                              
           }
           
         };
