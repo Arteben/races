@@ -2235,9 +2235,7 @@ var main = {
           }
           
           if (this.timer >= rival.time && !rival.write_wins){
-            
-            console.log('reeead! wins', rival.write_wins);
-            
+                        
             rival.write_wins = true;
             this.finish_game(rival);
                               
