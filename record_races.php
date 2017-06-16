@@ -58,19 +58,19 @@
   if (count($races_for_road) > 3){
     
     if ($time_racer > 0 && $check_time > 0){
-          
+                
       foreach($races_for_road as $key){
         
-        $max = $key;
+        if (!isset($max)){
+          $max = $key;
+        }
         
         if ((int) $races_file[$key]['time'] > $races_file[$max]['time']){
           $max = $key;
         } 
       }
       
-      if ( isset($max)){
-        unset ($races_file[$max]);
-      }
+      unset ($races_file[$max]);
       
       record_racer($races_file, $racer_take, $path);        
     
