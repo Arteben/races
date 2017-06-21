@@ -12,7 +12,7 @@ var main = {
     var road = roads[settings.road];
     
     var road_params = { 
-      cell: 1,
+      cell: 0.1,
       radius: road.radius,
       indent_finish: 10,
       size: 0,
@@ -20,28 +20,28 @@ var main = {
       
       attr_road: {
         'stroke': '#000', 
-        'stroke-width': 0.5, 
+        'stroke-width': 0.1, 
         'fill': road.fill, 
         'title': 'road', 
       },
       
       attr_border: {
         'stroke': '#444', 
-        'stroke-width': 10, 
+        'stroke-width': 1, 
         'stroke-linejoin': 'round',
         'title': 'border', 
       },
       
       attr_finish: {
-        'stroke': '#DD3', 
-        'stroke-width': 2,
+        'stroke': '#BB3', 
+        'stroke-width': 1,
         'stroke-linecap': 'round', 
         'title': 'finish',
       },
       
       attr_boxes: {
         'stroke': '#000',
-       'stroke-width': 0.5,
+       'stroke-width': 0.1,
         'stroke-linejoin': 'round',
        'fill': '#444',
         'title': 'boxes',
@@ -726,8 +726,8 @@ var main = {
             }
         };
         
-        var indent_x = 0.03;
-        var indent_y = 0.03;
+        var indent_x = 0.005;
+        var indent_y = 0.005;
         
         var get_indent = function(count){
           
@@ -826,7 +826,7 @@ var main = {
                             
         return function(x, y, root){
           
-          if (this.speed < 5){
+          if (this.speed < 15){
                       
             xy = get_indent(this.steps.count);
           
@@ -845,7 +845,7 @@ var main = {
         return {
           x: i * this.cell + this.cell / 2,
           y: j * this.cell + this.cell / 2,
-        }
+        };
       },
 
       set_point: (function(){
@@ -881,25 +881,27 @@ var main = {
         var older_level = 0;
         var type_calcuts = 'qul';
         var scale;
-        var add_scale = 0.1;
+        var add_scale = 0.02;
         var frames = frames_for_races;
         var svg = paper;
         var s = sizes;
         var level;
-        var multy = 0.05;
+        var multy = 0.006;
         var no_view = road_params.free_view;
+        var params = road_params;
+        var half_w, half_h;
         
         return function (x_racer,  y_racer, count){        
           
           if (no_view){
             return;
           }
-          
+                    
           if (this.current_speed_root.s == 0){
             older_level = 0;
           }
                                         
-          level = Math.floor(this.current_speed_root.s / 10);
+          level = Math.floor(this.current_speed_root.s / 20);
     
           if (count === 1){ 
             if (level > older_level){
@@ -924,14 +926,31 @@ var main = {
               scale = older_level * multy;
             break
           }
-                           
+                                     
           scale += add_scale;
           
           w = s.w * scale;
           h = s.h * scale;
-          x = x_racer - w / 2;              
-          y = y_racer - h / 2;
+                 
+          half_w = w / 2;
+          half_h = h / 2;       
+                 
+          if (x_racer - half_w <= 0){
+            x = 0;
+          } else if (x_racer + half_w > params.size){
+            x = params.size - w;
+          } else {
+            x = x_racer - half_w;
+          }
           
+          if (y_racer - half_h <= 0){
+            y = 0;
+          } else if (y_racer + half_h > params.size){
+            y = params.size - h;
+          } else {
+            y = y_racer - half_h;
+          }
+
           svg.setViewBox(x, y, w, h);                              
         };
       }()),
@@ -1238,14 +1257,13 @@ var main = {
       
       rnds: {
         r: 0,
-        stroke: 0.002,
         op: 1,
       },
       
       add_str: 0,
       
-      el: paper.circle(0, 0, 0).attr({'stroke-opacity': 0.8, 'stroke': '#000',
-                              'fill': '#444', 'stroke-width': 2}),
+      el: paper.circle(0, 0, 0).attr({'stroke-opacity': 0.1, 'stroke': '#000',
+                              'fill': '#444', 'stroke-width': 0.3}),
       // first step for hit
       start: function(x, y, add){
       
@@ -1254,9 +1272,8 @@ var main = {
         this.anim = true;
         this.el.show();
         this.rnds.r = 0;
-        this.rnds.str = 0.02;
         this.rnds.op = 1; 
-        this.add_str = add / 2;
+        this.add_str = add / 2000;
       
         sounds.setVolume(sounds.play('hit'), 0.5);
         
@@ -1265,7 +1282,7 @@ var main = {
       steps: function(){
         
         this.rnds.r += this.count * 0.01 + this.add_str + app.ease(this.count / 1000, 'inQuart') * 10;
-        this.rnds.op = 10 / this.count  + 0.5;
+        this.rnds.op = 10 / this.count  + 0.3;
         
         if (this.rnds.op > 1){
           this.rnds.op = 1;
@@ -1736,25 +1753,22 @@ var main = {
         
         var win_obj;
         var time;
-                
-        if (this.wins.length < 4){
           
-          if (racer.type == 'user'){
-            time = this.get_human_time();
-            racer.human_time = time;
-          } else {
-            time = racer.human_time;
-          }
-          
-          win_obj = {
-            type: racer.type,
-            name: racer.name,
-            fly:  racer.fly,
-            human_time: time,               
-          };
-          
-          this.wins.push(win_obj);
-        }
+        if (racer.type == 'user'){
+          time = this.get_human_time();
+          racer.human_time = time;
+        } else {
+          time = racer.human_time;
+        }                
+                            
+        win_obj = {
+          type: racer.type,
+          name: racer.name,
+          fly:  racer.fly,
+          human_time: time,               
+        };
+        
+        this.wins.push(win_obj);
         
         if (racer.type == 'user'){
           this.status = 'end';      
@@ -2345,7 +2359,7 @@ var main = {
     this.step = function(){
 
       var gm = this._gm_;
-      var text, i, wins_user;
+      var text, i, wins_user, wins_length;
       
       switch(gm.status){
         case 'begin':
@@ -2386,8 +2400,14 @@ var main = {
             gm.up_finish.set_text(text);
             
             wins_user = false;
+            
+            if (gm.wins.length > 4){
+              wins_length = 4;
+            } else {
+              wins_length = gm.wins.length; 
+            } 
                         
-            for(i = 0; i < gm.wins.length; i++){
+            for(i = 0; i < wins_length; i++){
               if (gm.wins[i].type == 'user'){
                 wins_user = true;
                 break;
